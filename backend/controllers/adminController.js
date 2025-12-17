@@ -1,7 +1,7 @@
 import User from '../models/User.js';
 import ClassRequest from '../models/ClassRequest.js';
 import TutorProfile from '../models/TutorProfile.js';
-
+import ClassApplication from '../models/ClassApplication.js'
 // @desc    Lấy danh sách tất cả người dùng
 // @route   GET /api/admin/users
 export const getAllUsers = async (req, res) => {
@@ -108,3 +108,65 @@ export const getTutorProfileById = async (req, res) => {
     res.status(500).json({ message: 'Lỗi Server' });
   }
 };
+
+// @desc    Admin lấy danh sách đơn ứng tuyển (để duyệt)
+// @route   GET /api/admin/applications
+export const getApplicationsForAdmin = async (req, res) => {
+  try {
+    const apps = await ClassApplication.find({})
+      .populate('tutor', 'hoTen email phoneNumber') // Lấy thông tin gia sư
+      .populate('classRequest', 'subject grade status') // Lấy thông tin lớp
+      .sort({ createdAt: -1 });
+    res.json(apps);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Admin duyệt hoặc từ chối đơn
+// @route   PUT /api/admin/applications/:id/status
+export const updateApplicationStatus = async (req, res) => {
+  const { status, adminNote } = req.body;
+
+  try {
+    const app = await ClassApplication.findById(req.params.id);
+    if (!app) return res.status(404).json({ message: "Không tìm thấy đơn" });
+
+    // Cập nhật thông tin cơ bản
+    app.status = status;
+    if (adminNote) app.adminNote = adminNote;
+    await app.save();
+
+    // --- CASE 1: NẾU DUYỆT (APPROVED) ---
+    if (status === 'approved') {
+      const classRequest = await ClassRequest.findById(app.classRequest);
+      if (classRequest) {
+        // 1. Chốt đơn lớp học
+        classRequest.assignedTutor = app.tutor;
+        classRequest.status = 'matched'; // Đóng lớp
+        await classRequest.save();
+
+        // 2. Tự động từ chối các đối thủ khác (Logic hay nên giữ)
+        await ClassApplication.updateMany(
+          { classRequest: classRequest._id, _id: { $ne: app._id } },
+          { status: 'rejected', adminNote: 'Lớp đã giao cho gia sư khác' }
+        );
+
+        // TODO: Gửi Notification cho Gia sư: "Chúc mừng bạn đã nhận được lớp!"
+      }
+    }
+
+    // --- CASE 2: NẾU TỪ CHỐI (REJECTED) ---
+    else if (status === 'rejected') {
+      // Lớp học (ClassRequest) KHÔNG CẦN THAY ĐỔI GÌ CẢ (Vẫn để status là approved để người khác nộp)
+
+      // Tuy nhiên, bạn có thể thêm logic phụ ở đây:
+      // TODO: Gửi Notification cho Gia sư: "Rất tiếc, hồ sơ của bạn chưa phù hợp..."
+      console.log(`Đã từ chối đơn của gia sư ${app.tutor}`);
+    }
+
+    res.json(app);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}

@@ -5,6 +5,8 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import tutorRoutes from './routes/tutorRoutes.js';
 import classRequestRoutes from './routes/classRequestRoutes.js';
+import applicationRoutes from './routes/applicationRoutes.js'
+
 //import admin
 import adminRoutes from './routes/adminRoutes.js';
 // Load biến môi trường
@@ -23,6 +25,7 @@ app.use(cors()); // Cho phép Frontend gọi API (sau này)
 app.use("/api/auth", authRoutes);
 app.use('/api/tutors', tutorRoutes);
 app.use('/api/requests', classRequestRoutes);
+app.use('/api/applications', applicationRoutes)
 // Admin Routes
 app.use('/api/admin', adminRoutes);
 

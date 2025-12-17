@@ -18,6 +18,7 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
     { id: 'tutors', label: 'Danh sách Gia sư', icon: <FiBriefcase /> },
     { id: 'parents', label: 'Phụ huynh / HS', icon: <FiUser /> },
     { id: 'requests', label: 'Lớp học', icon: <FiBookOpen /> },
+    { id: 'applications', label: 'Yêu cầu nhận lớp', icon: <FiBookOpen /> },
   ];
 
   return (

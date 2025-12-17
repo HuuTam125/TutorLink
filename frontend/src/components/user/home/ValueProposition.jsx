@@ -34,7 +34,7 @@ const ValuePropositionSection = () => {
 
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-base text-blue-600 font-bold tracking-wide uppercase mb-2">Tại sao chọn GiaSuVN?</h2>
+          <h2 className="text-base text-blue-600 font-bold tracking-wide uppercase mb-2">Tại sao chọn TutorLink?</h2>
           <p className="text-3xl md:text-4xl font-extrabold text-gray-900">
             Nền tảng giáo dục <span className="text-blue-600">Tin cậy</span> & <span className="text-blue-600">Hiệu quả</span>
           </p>

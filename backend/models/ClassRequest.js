@@ -6,6 +6,11 @@ const classRequestSchema = new mongoose.Schema({
     ref: 'User', // Người đăng (Phụ huynh/Học viên)
     required: true
   },
+  assignedTutor: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User', // Link tới bảng User (role Tutor)
+    default: undefined // Ban đầu chưa có ai
+  },
   subject: {
     type: String,
     required: true
@@ -40,7 +45,7 @@ const classRequestSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
-  }
+  },
 });
 
 export default mongoose.model("ClassRequest", classRequestSchema);
