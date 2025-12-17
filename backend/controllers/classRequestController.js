@@ -24,20 +24,108 @@ export const createClassRequest = async (req, res) => {
   }
 };
 
-// @desc    Lấy tất cả yêu cầu (Cho trang chủ/Gia sư tìm lớp)
+// @desc    Lấy tất cả yêu cầu, có lọc (Cho trang chủ / Gia sư tìm lớp)
 // @route   GET /api/requests
 // @access  Public
 export const getAllClassRequests = async (req, res) => {
   try {
-    // Chỉ lấy các lớp đang chờ (pending) hoặc đã duyệt (approved)
-    // Sắp xếp mới nhất lên đầu
-    const requests = await ClassRequest.find({ status: 'approved' })
-      .populate('user', 'fullName avatar')
-      .sort({ createdAt: -1 });
-    res.json(requests);
+    const query = { status: 'approved' }; // Chỉ lấy lớp đã duyệt
 
+    // === BỘ LỌC ===
+
+    // Môn học
+    if (req.query.subjects) {
+      const subjects = req.query.subjects.split(',').map((s) => s.trim());
+      // dùng $regex để khớp linh hoạt hơn, tránh lỗi "Toán" ≠ "Toán học"
+      query.$or = subjects.map((sub) => ({
+        subject: { $regex: sub, $options: 'i' },
+      }));
+    }
+
+    // Cấp lớp
+    if (req.query.grades) {
+      const grades = req.query.grades.split(',').map((g) => g.trim());
+      // cho phép dùng regex để tránh sai chính tả nhỏ hoặc ghi chú mở rộng
+      query.grade = { $in: grades };
+    }
+
+    // Hình thức dạy
+    if (req.query.method) {
+      query.teachingMethod = req.query.method;
+    }
+
+    // Giới tính yêu cầu
+    if (req.query.gender) {
+      switch (req.query.gender) {
+        case 'Nam':
+          query.genderPreference = 'male';
+          break;
+        case 'Nữ':
+          query.genderPreference = 'female';
+          break;
+        default:
+          query.genderPreference = 'any';
+      }
+    }
+
+    // Khu vực (đã chỉnh để tìm “linh hoạt” hơn)
+    if (req.query.area && req.query.area.trim() !== '') {
+      // ví dụ: người dùng gõ “Quận 1” hoặc “Hà Nội” → tìm trong address
+      query.address = { $regex: req.query.area.trim(), $options: 'i' };
+    }
+
+    // === SẮP XẾP ===
+    let sortOption = {};
+    switch (req.query.sort) {
+      case 'budget_desc':
+        sortOption.budget = -1;
+        break;
+      case 'budget_asc':
+        sortOption.budget = 1;
+        break;
+      case 'newest':
+      default:
+        sortOption.createdAt = -1;
+        break;
+    }
+
+    // === TRUY VẤN ===
+    const requests = await ClassRequest.find(query)
+      .populate('user', 'fullName avatar')
+      .sort(sortOption);
+
+    res.json(requests);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error fetching class requests:', error);
+    res.status(500).json({ message: 'Lỗi khi tải danh sách lớp học' });
+  }
+};
+// @desc    Lấy chi tiết một yêu cầu lớp học theo ID
+// @route   GET /api/requests/:id
+// @access  Public (Ai cũng xem được để cân nhắc nhận lớp)
+export const getClassRequestById = async (req, res) => {
+  try {
+    const requestId = req.params.id;
+
+    // Tìm lớp theo ID và populate thông tin người đăng (user)
+    // Bạn có thể lấy thêm 'email' hoặc 'phoneNumber' nếu muốn hiển thị thông tin liên hệ ngay
+    const request = await ClassRequest.findById(requestId)
+      .populate('user', 'fullName avatar email phoneNumber');
+
+    if (!request) {
+      return res.status(404).json({ message: 'Không tìm thấy lớp học này' });
+    }
+
+    res.json(request);
+  } catch (error) {
+    console.error('Error fetching request by ID:', error);
+
+    // Kiểm tra nếu lỗi do ID không đúng định dạng MongoDB
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ message: 'ID lớp học không hợp lệ' });
+    }
+
+    res.status(500).json({ message: 'Lỗi server khi lấy chi tiết lớp' });
   }
 };
 

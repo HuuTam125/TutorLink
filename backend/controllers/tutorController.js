@@ -5,12 +5,77 @@ import TutorProfile from '../models/TutorProfile.js';
 // @access  Public
 export const getAllTutors = async (req, res) => {
   try {
-    const tutors = await TutorProfile.find({ isApproved: true }).populate('user', 'fullName avatar');
-    res.json(tutors);
+    const {
+      subjects,
+      grades,
+      area,
+      teachingMethod,
+      priceMin,
+      priceMax,
+      sort = 'rating_desc',
+      page = 1,
+      limit = 10,
+    } = req.query;
+
+    const query = { isApproved: true };
+
+    // Bộ lọc
+    if (subjects) query.subjects = { $in: subjects.split(',') };
+    if (grades) query.grades = { $in: grades.split(',') };
+    if (area) query.area = new RegExp(area, 'i');
+    if (teachingMethod) query.teachingMethod = teachingMethod;
+    if (priceMin || priceMax) {
+      query.hourlyRate = {};
+      if (priceMin) query.hourlyRate.$gte = Number(priceMin);
+      if (priceMax) query.hourlyRate.$lte = Number(priceMax);
+    }
+
+    // Sắp xếp
+    let sortOption = {};
+    switch (sort) {
+      case 'price_asc':
+        sortOption.hourlyRate = 1;
+        break;
+      case 'price_desc':
+        sortOption.hourlyRate = -1;
+        break;
+      case 'newest':
+        sortOption.createdAt = -1;
+        break;
+      case 'rating_desc':
+      default:
+        sortOption.rating = -1;
+        break;
+    }
+
+    // Phân trang
+    const pageNum = Number(page) || 1;
+    const limitNum = Number(limit) || 10;
+    const skip = (pageNum - 1) * limitNum;
+
+    // Truy vấn song song (hiệu suất cao hơn)
+    const [tutors, total] = await Promise.all([
+      TutorProfile.find(query)
+        .populate('user', 'fullName avatar')
+        .sort(sortOption)
+        .skip(skip)
+        .limit(limitNum),
+      TutorProfile.countDocuments(query),
+    ]);
+
+    // Trả về dữ liệu rõ ràng
+    res.json({
+      total,
+      page: pageNum,
+      totalPages: Math.ceil(total / limitNum),
+      tutors,
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Lỗi getAllTutors:', error);
+    res.status(500).json({ message: 'Lỗi server', error: error.message });
   }
 };
+
 
 // @desc    Lấy hồ sơ của gia sư đang đăng nhập
 // @route   GET /api/tutors/me

@@ -1,11 +1,13 @@
 import { useEffect, useState, useContext } from 'react';
-import axiosClient from '../api/axiosClient';
+import axiosClient from '../../api/axiosClient';
 import { toast } from 'react-toastify';
-import { AuthContext } from '../context/AuthContext';
+import { AuthContext } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import AdminSidebar from '../components/AdminSidebar';
-import ConfirmModal from '../components/ConfirmModal';
+import AdminSidebar from '../../components/admin/AdminSidebar';
+import ConfirmModal from '../../components/admin/ConfirmModal';
 import { FiTrash2, FiCheckCircle } from 'react-icons/fi';
+import TutorDetailPanel from '../../components/admin/AdminTutorDetailPanel';
+import Dashboard from "../../components/admin/dashboard/AdminDashboard"
 
 const AdminPage = () => {
   const { user } = useContext(AuthContext);
@@ -20,6 +22,7 @@ const AdminPage = () => {
   const [pendingTutors, setPendingTutors] = useState([]);
   const [pendingClass, setPendingClass] = useState([]);
   const [allClass, setallClass] = useState([]);
+  const [selectedTutorId, setSelectedTutorId] = useState(null);
   // --- STATE QUẢN LÝ MODAL ---
   // Thay vì confirm ngay, ta lưu thông tin hành động vào đây
   const [modalState, setModalState] = useState({
@@ -42,7 +45,7 @@ const AdminPage = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [resUsers, resPendingProfile, resPendingClass, resClass] = await Promise.all([
+      const [resUsers, resPendingProfile, resPendingClass, resClass, resUserProfiles] = await Promise.all([
         axiosClient.get('/admin/users'),
         axiosClient.get('/admin/tutors-pending'),
         axiosClient.get('/admin/requests-pending'),
@@ -137,20 +140,6 @@ const AdminPage = () => {
     }
   };
 
-  // --- SUB-COMPONENTS ---
-  const StatCard = ({ title, count, colorClass, label }) => (
-    <div className={`bg-white p-6 rounded-xl shadow-sm border-l-4 ${colorClass} hover:shadow-md transition-shadow`}>
-      <div className="flex justify-between items-center">
-        <div>
-          <p className="text-gray-500 text-sm font-medium uppercase tracking-wider">{title}</p>
-          <h3 className="text-3xl font-bold text-gray-800 mt-2">{count}</h3>
-        </div>
-        <div className={`p-3 rounded-full bg-opacity-20 ${colorClass.replace('border-', 'bg-').replace('500', '100')}`}>
-          <span className={`text-2xl ${colorClass.replace('border-', 'text-')}`}>{label}</span>
-        </div>
-      </div>
-    </div>
-  );
 
   const TableHeader = ({ headers }) => (
     <thead className="bg-gray-50">
@@ -164,17 +153,6 @@ const AdminPage = () => {
     </thead>
   );
 
-  // --- VIEWS ---
-  const renderDashboard = () => (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800">Tổng quan hệ thống</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard title="Thành viên" count={stats.userCount} colorClass="border-blue-500" label="👥" />
-        <StatCard title="Chờ duyệt" count={stats.pendingCount} colorClass="border-yellow-500" label="⏳" />
-        <StatCard title="Lớp học" count={stats.requestCount} colorClass="border-green-500" label="📚" />
-      </div>
-    </div>
-  );
 
   const renderPendingProfile = () => (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -281,6 +259,15 @@ const AdminPage = () => {
     // Lọc danh sách chỉ lấy tutor
     const tutorList = users.filter(u => u.role === 'tutor');
 
+    if (selectedTutorId) {
+      return (
+        <TutorDetailPanel
+          tutorId={selectedTutorId}
+          onBack={() => setSelectedTutorId(null)}
+        />
+      );
+    }
+
     return (
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="p-6 border-b border-gray-100 flex justify-between items-center">
@@ -295,7 +282,7 @@ const AdminPage = () => {
                 <tr
                   key={t._id}
                   className="hover:bg-gray-50 cursor-pointer"
-                  onClick={() => navigate(`/admin/tutors-profile/${t._id}`)}
+                  onClick={() => setSelectedTutorId(t._id)}
                 >
                   <td className="px-6 py-4">
                     <div className="flex items-center">
@@ -437,7 +424,7 @@ const AdminPage = () => {
             <div className="flex justify-center items-center h-64 text-gray-400">Đang tải dữ liệu...</div>
           ) : (
             <>
-              {activeTab === 'dashboard' && renderDashboard()}
+              {activeTab === 'dashboard' && <Dashboard stats={stats} />}
               {activeTab === 'pending' && renderPendingProfile()}
               {activeTab === 'pending_requests' && renderPendingClass()}
               {activeTab === 'tutors' && renderTutorsList()}

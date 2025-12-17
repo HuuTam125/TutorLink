@@ -30,6 +30,8 @@ const classRequestSchema = new mongoose.Schema({
     type: String, // Địa chỉ dạy
     required: true
   },
+  genderPreference: { type: String, enum: ['any', 'male', 'female'], default: 'any' },
+  teachingMethod: { type: String, enum: ['online', 'offline', 'both'], default: 'both' },
   status: {
     type: String,
     enum: ['pending', 'approved', 'matched', 'closed'], // Đang chờ, Đã duyệt, Đã tìm được, Đóng

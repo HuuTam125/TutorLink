@@ -38,8 +38,9 @@ const tutorProfileSchema = new mongoose.Schema({
   isApproved: {
     type: Boolean, // Admin duyệt hồ sơ mới được hiện
     default: false
-  }
-});
+  },
+  rating: { type: Number, default: 0 }
+}, { timestamps: true });
 
 // Tạo index để tìm kiếm nhanh hơn
 // 1. Index đơn cho area (Thường xuyên lọc theo khu vực)
