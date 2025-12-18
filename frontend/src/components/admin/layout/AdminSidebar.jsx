@@ -1,5 +1,5 @@
 import { FiHome, FiUserCheck, FiUser, FiBriefcase, FiLayers, FiBookOpen, FiLogOut } from 'react-icons/fi';
-import { AuthContext } from '../../context/AuthContext';
+import { AuthContext } from '../../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 

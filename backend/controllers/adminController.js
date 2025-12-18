@@ -146,7 +146,7 @@ export const updateApplicationStatus = async (req, res) => {
         classRequest.status = 'matched'; // Đóng lớp
         await classRequest.save();
 
-        // 2. Tự động từ chối các đối thủ khác (Logic hay nên giữ)
+        // 2. Tự động từ chối các đối thủ khác W
         await ClassApplication.updateMany(
           { classRequest: classRequest._id, _id: { $ne: app._id } },
           { status: 'rejected', adminNote: 'Lớp đã giao cho gia sư khác' }

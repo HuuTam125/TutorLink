@@ -42,3 +42,17 @@ export const applyForClass = async (req, res) => {
   }
 };
 
+// @desc    Lấy danh sách đơn ứng tuyển CỦA TÔI (Gia sư)
+// @route   GET /api/applications/my-applications
+// @access  Private (Tutor only)
+export const getMyApplications = async (req, res) => {
+  try {
+    const apps = await ClassApplication.find({ tutor: req.user._id })
+      .populate('classRequest', 'subject grade status address budget') // Lấy thông tin lớp để hiển thị
+      .sort({ createdAt: -1 }); // Mới nhất lên đầu
+
+    res.json(apps);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

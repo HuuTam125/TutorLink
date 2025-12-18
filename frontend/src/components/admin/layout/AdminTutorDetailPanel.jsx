@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import axiosClient from '../../api/axiosClient';
+import axiosClient from '../../../api/axiosClient';
 import { FiArrowLeft } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 

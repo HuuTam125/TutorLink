@@ -136,9 +136,9 @@ const RequestCard = ({ request }) => {
         <div className="flex flex-col justify-between border-t md:border-t-0 md:border-l border-dashed border-gray-200 pt-4 md:pt-0 md:pl-6 min-w-[200px]">
           <div className="text-right md:text-right flex flex-row md:flex-col justify-between items-center md:items-end mb-4 md:mb-0">
             <div>
-              <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Ngân sách dự kiến</p>
+              <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Học phí</p>
               <div className="text-xl md:text-2xl font-extrabold text-blue-600">
-                {formattedPrice} <span className="text-sm font-medium text-gray-500">đ/buổi</span>
+                {formattedPrice} <span className="text-sm font-medium text-gray-500">đ/tháng</span>
               </div>
             </div>
           </div>

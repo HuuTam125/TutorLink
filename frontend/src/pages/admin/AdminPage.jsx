@@ -5,9 +5,9 @@ import { AuthContext } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 // Layout & UI Components
-import AdminSidebar from '../../components/admin/AdminSidebar';
-import ConfirmModal from '../../components/admin/ConfirmModal';
-import TutorDetailPanel from '../../components/admin/AdminTutorDetailPanel';
+import AdminSidebar from '../../components/admin/layout/AdminSidebar';
+import ConfirmModal from '../../components/admin/layout/ConfirmModal';
+import TutorDetailPanel from '../../components/admin/layout/AdminTutorDetailPanel';
 import Dashboard from "../../components/admin/dashboard/AdminDashboard";
 
 // Table Components

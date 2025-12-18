@@ -11,6 +11,11 @@ const applicationSchema = mongoose.Schema({
     ref: 'User', // Người ứng tuyển (phải là Tutor)
     required: true
   },
+  paymentStatus: {
+    type: String,
+    enum: ['unpaid', 'paid'], // Chưa đóng phí, Đã đóng phí
+    default: 'unpaid'
+  },
   status: {
     type: String,
     enum: ['pending', 'approved', 'rejected'], // Chờ duyệt, Chấp thuận, Từ chối

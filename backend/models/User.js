@@ -29,6 +29,11 @@ const userSchema = new mongoose.Schema({
     type: String, // URL ảnh đại diện
     default: ''
   },
+  walletBalance: {
+    type: Number,
+    default: 0, // Mặc định là 0 đồng
+    min: 0 // Không được âm
+  },
   createdAt: {
     type: Date,
     default: Date.now

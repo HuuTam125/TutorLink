@@ -2,9 +2,12 @@ import { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-import UserSidebar from '../../components/user/UserSidebar';
-import UserInfoTab from '../../components/user/UserInfoTab';
-import TutorProfileTab from '../../components/user/TutorProfileTab';
+import UserSidebar from '../../components/user/profile/UserSidebar';
+import UserInfoTab from '../../components/user/profile/UserInfoTab';
+import TutorProfileTab from '../../components/user/profile/TutorProfileTab';
+import MyRequestsTab from '../../components/user/profile/MyRequestsTab';
+import MyApplicationsTab from '../../components/user/profile/MyApplicationsTab';
+import WalletTab from '../../components/user/profile/WalletTab';
 
 const UserProfilePage = () => {
   const { user } = useContext(AuthContext);
@@ -25,22 +28,38 @@ const UserProfilePage = () => {
       {/* 1. Sidebar */}
       <UserSidebar activeTab={activeTab} setActiveTab={setActiveTab} user={user} />
 
-      {/* 2. Content Area */}
       <div style={contentStyle}>
+        {/* Tab 1: Thông tin chung */}
         {activeTab === 'info' && <UserInfoTab user={user} />}
 
+        {/* Tab 2: Hồ sơ Gia sư (Chỉ Tutor) */}
         {activeTab === 'tutor-profile' && user?.role === 'tutor' && (
           <TutorProfileTab />
         )}
 
-        {activeTab === 'schedule' && (
-          <div style={{ textAlign: 'center', marginTop: '50px', color: '#666' }}>
-            <h3>Chức năng Lịch dạy đang được xây dựng...</h3>
+        {/* Tab 3: Lớp đã đăng (Chỉ Student) - MỚI */}
+        {activeTab === 'my-requests' && (
+          <MyRequestsTab />
+        )}
+
+        {/* Tab 4: Lịch sử ứng tuyển (Chỉ Tutor) - ĐÃ CẬP NHẬT */}
+        {activeTab === 'my-applications' && user?.role === 'tutor' && (
+          <MyApplicationsTab />
+        )}
+
+        {/* Tab 5: Đổi mật khẩu */}
+        {activeTab === 'password' && (
+          <div style={{ background: 'white', padding: '20px', borderRadius: '8px' }}>
+            <h3>Đổi mật khẩu</h3>
+            <p>Form đổi mật khẩu sẽ đặt ở đây...</p>
           </div>
+        )}
+
+        {activeTab === 'wallet' && user?.role === 'tutor' && (
+          <WalletTab />
         )}
       </div>
     </div>
   );
 };
-
 export default UserProfilePage;
