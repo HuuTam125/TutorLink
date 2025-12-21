@@ -7,7 +7,7 @@ import tutorRoutes from './routes/tutorRoutes.js';
 import classRequestRoutes from './routes/classRequestRoutes.js';
 import applicationRoutes from './routes/applicationRoutes.js'
 import walletRoutes from './routes/walletRoutes.js';
-
+import invitationRoutes from './routes/invitationRoutes.js'
 //import admin
 import adminRoutes from './routes/adminRoutes.js';
 // Load biến môi trường
@@ -28,6 +28,7 @@ app.use('/api/tutors', tutorRoutes);
 app.use('/api/requests', classRequestRoutes);
 app.use('/api/applications', applicationRoutes)
 app.use('/api/wallet', walletRoutes);
+app.use('/api/invitations', invitationRoutes);
 // Admin Routes
 app.use('/api/admin', adminRoutes);
 

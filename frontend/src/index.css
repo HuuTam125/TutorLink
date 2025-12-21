@@ -1,1 +1,55 @@
 @import "tailwindcss";
+
+/* --- THANH CUỘN CHO DARK MODE --- */
+.scrollbar-dark::-webkit-scrollbar {
+  width: 5px;
+}
+
+.scrollbar-dark::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-dark::-webkit-scrollbar-thumb {
+  background: #334155;
+  /* Slate 700 */
+  border-radius: 10px;
+}
+
+.scrollbar-dark::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* --- THANH CUỘN CHO LIGHT MODE (Sửa lỗi thanh đen) --- */
+.scrollbar-light::-webkit-scrollbar {
+  width: 5px;
+}
+
+.scrollbar-light::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-light::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  /* Slate 300 - Màu xám rất nhạt */
+  border-radius: 10px;
+}
+
+.scrollbar-light::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+  /* Slate 400 khi hover */
+}
+
+/* Animation xoay */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 12s linear infinite;
+}

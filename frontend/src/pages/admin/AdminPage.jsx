@@ -16,8 +16,9 @@ import PendingClassesTable from '../../components/admin/tables/PendingClassesTab
 import TutorsTable from '../../components/admin/tables/TutorsTable';
 import ParentsTable from '../../components/admin/tables/ParentsTable';
 import ClassesTable from '../../components/admin/tables/ClassesTable';
-import ApplicationManagementTable from '../../components/admin/tables/ApplicationManagementTable';
-
+import MatchedClassesTable from '../../components/admin/tables/MatchedClassesTable';
+import RefundReportsTable from '../../components/admin/tables/RefundReportsTable';
+import TransactionsTable from '../../components/admin/tables/TransactionsTable';
 const AdminPage = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -32,8 +33,9 @@ const AdminPage = () => {
   const [pendingClass, setPendingClass] = useState([]);
   const [allClass, setallClass] = useState([]);
   const [selectedTutorId, setSelectedTutorId] = useState(null);
-  const [applications, setApplications] = useState([]);
-
+  const [matchedClasses, setMatchedClasses] = useState([]); // Lớp đã kết nối
+  const [reports, setReports] = useState([]); // Khiếu nại
+  const [transactions, setTransactions] = useState([]); // Giao dịch
   // Modal State
   const [modalState, setModalState] = useState({
     isOpen: false,
@@ -55,25 +57,32 @@ const AdminPage = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [resUsers, resPendingProfile, resPendingClass, resClass, resApps] = await Promise.all([
+      const [
+        resUsers, resPendingProfile, resPendingClass, resClass,
+        resMatched, resReports, resTrans
+      ] = await Promise.all([
         axiosClient.get('/admin/users'),
         axiosClient.get('/admin/tutors-pending'),
         axiosClient.get('/admin/requests-pending'),
-        axiosClient.get('/requests'),
-        axiosClient.get('admin/applications'),
-
+        axiosClient.get('/requests'), // Tất cả lớp
+        axiosClient.get('/admin/matched-classes'), // Lấy các lớp status 'matched'
+        axiosClient.get('/admin/reports'),         // Lấy application có reportStatus 'pending'
+        axiosClient.get('/admin/transactions'),    // Lấy lịch sử giao dịch toàn hệ thống
       ]);
 
       setUsers(resUsers.data);
       setPendingTutors(resPendingProfile.data);
       setPendingClass(resPendingClass.data);
       setallClass(resClass.data);
-      setApplications(resApps.data);
-      console.log(resApps.data)
+      setMatchedClasses(resMatched.data);
+      setReports(resReports.data);
+      setTransactions(resTrans.data);
+
       setStats({
         userCount: resUsers.data.length,
         pendingCount: resPendingProfile.data.length,
-        requestCount: resClass.data.length
+        requestCount: resClass.data.length,
+        revenue: resTrans.data.reduce((acc, curr) => curr.type === 'payment' ? acc + curr.amount : acc, 0)
       });
     } catch (error) {
       console.error(error);
@@ -85,7 +94,7 @@ const AdminPage = () => {
 
   useEffect(() => {
     if (user?.role === 'admin') fetchData();
-  }, [user]);
+  }, [user, activeTab]);
 
   // --- ACTIONS ---
 
@@ -144,32 +153,28 @@ const AdminPage = () => {
     }
   };
 
-  const handleApproveApp = async (id) => {
-    if (!window.confirm("Bạn chắc chắn muốn DUYỆT đơn này?")) return;
+  // --- XỬ LÝ KHIẾU NẠI ---
+  const handleRefund = async (appId) => {
+    if (!window.confirm("Xác nhận hoàn tiền cho Gia sư này?")) return;
     try {
-      await axiosClient.put(`/admin/applications/${id}/status`, {
-        status: 'approved',
-      });
-      toast.success("Đã duyệt đơn thành công!");
-      fetchData(); // Load lại data
-    } catch (error) {
-      toast.error("Lỗi: " + error.message);
-    }
-  };
-
-  const handleRejectApp = async (id) => {
-    if (!window.confirm("Bạn chắc chắn muốn TỪ CHỐI đơn này?")) return;
-    try {
-      await axiosClient.put(`/admin/applications/${id}/status`, {
-        status: 'rejected',
-      });
-      toast.success("Đã từ chối đơn.");
+      await axiosClient.post('/admin/refund', { applicationId: appId });
+      toast.success("Đã hoàn tiền thành công");
       fetchData();
     } catch (error) {
-      toast.error("Lỗi: " + error.message);
+      toast.error("Lỗi hoàn tiền: " + error.message);
     }
   };
-
+  const handleDismissReport = async (appId) => {
+    // Logic từ chối hoàn tiền (Bạn cần viết thêm API này nếu muốn)
+    if (!window.confirm("Từ chối khiếu nại này?")) return;
+    try {
+      await axiosClient.put(`/admin/applications/${appId}/resolve-report`);
+      toast.success("Đã giải quyết khiếu nại");
+      fetchData();
+    } catch (error) {
+      toast.error("Lỗi");
+    }
+  };
   // --- RENDER CONTENT ---
   const renderContent = () => {
     if (loading) return <div className="flex justify-center items-center h-64 text-gray-400">Đang tải dữ liệu...</div>;
@@ -227,14 +232,14 @@ const AdminPage = () => {
             onDelete={(id) => openDeleteModal('delete_request', id)}
           />
         );
-      case 'applications':
-        return (
-          <ApplicationManagementTable
-            applications={applications}
-            onApprove={handleApproveApp}
-            onReject={handleRejectApp}
-          />
-        );
+      case 'matched':
+        return <MatchedClassesTable classes={matchedClasses} />;
+
+      case 'reports':
+        return <RefundReportsTable reports={reports} onRefund={handleRefund} onDismiss={handleDismissReport} />;
+
+      case 'transactions':
+        return <TransactionsTable transactions={transactions} />;
       default:
         return null;
     }

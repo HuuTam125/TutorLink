@@ -1,5 +1,5 @@
 import ClassRequest from '../models/ClassRequest.js';
-
+import ClassApplication from '../models/ClassApplication.js';
 // @desc    Tạo yêu cầu tìm gia sư mới
 // @route   POST /api/requests
 // @access  Private (Student)
@@ -160,6 +160,55 @@ export const deleteClassRequest = async (req, res) => {
 
     await request.deleteOne();
     res.json({ message: 'Đã xóa yêu cầu thành công' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Lấy danh sách gia sư ứng tuyển cho lớp của tôi
+// @route   GET /api/requests/:id/applications
+// @access  Private (Owner only)
+export const getApplicationsForRequest = async (req, res) => {
+  try {
+    // 1. Kiểm tra lớp học có tồn tại không
+    const classRequest = await ClassRequest.findById(req.params.id);
+    if (!classRequest) return res.status(404).json({ message: "Lớp học không tồn tại" });
+
+    // 2. Kiểm tra quyền chính chủ (Chỉ người đăng lớp mới được xem)
+    if (classRequest.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Bạn không có quyền xem danh sách này" });
+    }
+
+    // 3. Lấy danh sách ứng tuyển
+    const apps = await ClassApplication.find({ classRequest: req.params.id })
+      .populate('tutor', 'fullName email phone') // Lấy thông tin gia sư
+      .sort({ createdAt: -1 });
+
+    res.json(apps);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Phụ huynh CHẤP NHẬN gia sư
+// @route   PUT /api/requests/application/:appId/accept
+// @access  Private (Owner only)
+export const acceptTutor = async (req, res) => {
+  try {
+    const app = await ClassApplication.findById(req.params.appId);
+    if (!app) return res.status(404).json({ message: "Đơn ứng tuyển không tồn tại" });
+
+    // Kiểm tra quyền sở hữu thông qua classRequest
+    const classRequest = await ClassRequest.findById(app.classRequest);
+    if (classRequest.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Bạn không phải chủ lớp học này" });
+    }
+
+    // Cập nhật trạng thái
+    app.status = 'approved';
+    await app.save();
+
+    res.json({ message: "Đã chọn gia sư thành công! Vui lòng chờ gia sư đóng phí." });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

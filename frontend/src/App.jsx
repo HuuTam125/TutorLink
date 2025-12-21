@@ -1,9 +1,11 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
+import PageTransition from './components/user/layout/PageTransition';
 import Header from './components/user/layout/Header';
 import Footer from './components/user/layout/Footer'
 import ScrollToTop from './components/user/layout/ScrollToTop'
 import BackToTop from './components/user/layout/BackToTop'
 import { ToastContainer } from 'react-toastify';
+import { AnimatePresence } from 'framer-motion';
 import 'react-toastify/dist/ReactToastify.css';
 
 // 1. Auth Group
@@ -39,20 +41,60 @@ function App() {
       {!hide && <Header />}
       <ScrollToTop />
       <BackToTop />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/profile" element={<UserProfilePage />} />
-        <Route path="/post-request" element={<PostRequestPage />} />
-        <Route path="/tutors/:id" element={<TutorDetailPage />} />
-        <Route path="/my-requests" element={<MyRequestsPage />} />
-        <Route path="/tutors" element={<TutorPage />} />
-        <Route path="/classes" element={<ClassesPage />} />
-        <Route path="/classes/:id" element={<ClassDetailPage />} />
-        <Route path="/admin" element={<AdminPage />} />
 
-      </Routes>
+      {/* 2. Thêm mode="wait" để trang cũ biến mất xong trang mới mới hiện ra (mượt hơn) */}
+      <AnimatePresence mode="wait">
+        {/* 3. Phải truyền location và key vào Routes để Framer Motion nhận diện sự thay đổi */}
+        <Routes location={location} key={location.pathname}>
+
+          {/* 4. Bọc PageTransition cho các element muốn có hiệu ứng */}
+          <Route path="/" element={
+            <PageTransition><HomePage /></PageTransition>
+          } />
+
+          <Route path="/login" element={
+            <PageTransition><LoginPage /></PageTransition>
+          } />
+
+          <Route path="/register" element={
+            <PageTransition><RegisterPage /></PageTransition>
+          } />
+
+          <Route path="/profile" element={
+            <PageTransition><UserProfilePage /></PageTransition>
+          } />
+
+          <Route path="/post-request" element={
+            <PageTransition><PostRequestPage /></PageTransition>
+          } />
+
+          <Route path="/tutors/:id" element={
+            <PageTransition><TutorDetailPage /></PageTransition>
+          } />
+
+          <Route path="/my-requests" element={
+            <PageTransition><MyRequestsPage /></PageTransition>
+          } />
+
+          <Route path="/tutors" element={
+            <PageTransition><TutorPage /></PageTransition>
+          } />
+
+          <Route path="/classes" element={
+            <PageTransition><ClassesPage /></PageTransition>
+          } />
+
+          <Route path="/classes/:id" element={
+            <PageTransition><ClassDetailPage /></PageTransition>
+          } />
+
+          <Route path="/admin" element={
+            <PageTransition><AdminPage /></PageTransition>
+          } />
+
+        </Routes>
+      </AnimatePresence>
+
       <ToastContainer />
       {!hide && <Footer />}
     </div>

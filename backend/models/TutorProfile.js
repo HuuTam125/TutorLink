@@ -7,6 +7,16 @@ const tutorProfileSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
+  university: {
+    type: String,
+    required: true, // Ví dụ: ĐH Bách Khoa TP.HCM
+    trim: true
+  },
+  major: {
+    type: String,
+    required: true, // Ví dụ: Khoa học máy tính
+    trim: true
+  },
   bio: {
     type: String, // Giới thiệu bản thân
     required: true

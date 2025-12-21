@@ -28,3 +28,23 @@ export const protect = async (req, res, next) => {
     res.status(401).json({ message: 'Không có quyền truy cập, không tìm thấy token' });
   }
 };
+
+// 2. Chỉ cho phép GIA SƯ (Tutor)
+export const tutor = (req, res, next) => {
+  // Kiểm tra: Có user và vai trò phải là 'tutor'
+  if (req.user && req.user.role === 'tutor') {
+    next(); // Cho qua
+  } else {
+    // 403 Forbidden: Đã đăng nhập nhưng không có quyền
+    res.status(403).json({ message: 'Chức năng chỉ dành cho Gia sư' });
+  }
+};
+
+// 3. Chỉ cho phép HỌC VIÊN/PHỤ HUYNH (Student)
+export const student = (req, res, next) => {
+  if (req.user && req.user.role === 'student') {
+    next();
+  } else {
+    res.status(403).json({ message: 'Chức năng chỉ dành cho Phụ huynh/Học viên' });
+  }
+};

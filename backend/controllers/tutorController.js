@@ -98,25 +98,47 @@ export const getCurrentTutorProfile = async (req, res) => {
 // @route   POST /api/tutors
 // @access  Private (Tutor only)
 export const createOrUpdateTutorProfile = async (req, res) => {
-  const { bio, subjects, grades, area, teachingMethod, hourlyRate, experience } = req.body;
-
-  // Chuẩn bị object dữ liệu
-  const profileFields = {
-    user: req.user._id,
+  const {
+    university,
+    major,
     bio,
-    subjects: Array.isArray(subjects) ? subjects : subjects.split(',').map(s => s.trim()),
-    grades: Array.isArray(grades) ? grades : grades.split(',').map(g => g.trim()),
+    subjects,
+    grades,
     area,
     teachingMethod,
     hourlyRate,
     experience
-  };
+  } = req.body;
 
   try {
-    // Tìm xem đã có profile chưa
+    // Chuẩn hóa dữ liệu (tách mảng nếu người dùng gửi chuỗi)
+    const profileFields = {
+      user: req.user._id,
+      university,
+      major,
+      bio,
+      subjects: Array.isArray(subjects)
+        ? subjects
+        : typeof subjects === 'string'
+          ? subjects.split(',').map((s) => s.trim()).filter(Boolean)
+          : [],
+      grades: Array.isArray(grades)
+        ? grades
+        : typeof grades === 'string'
+          ? grades.split(',').map((g) => g.trim()).filter(Boolean)
+          : [],
+      area,
+      teachingMethod,
+      hourlyRate,
+      experience,
+      isApproved: false
+    };
+
+    // Tìm hồ sơ cũ
     let profile = await TutorProfile.findOne({ user: req.user._id });
+
     if (profile) {
-      // Update
+      // Cập nhật hồ sơ hiện có
       profile = await TutorProfile.findOneAndUpdate(
         { user: req.user._id },
         { $set: profileFields },
@@ -125,20 +147,21 @@ export const createOrUpdateTutorProfile = async (req, res) => {
       return res.json(profile);
     }
 
-    // Create
+    // Tạo hồ sơ mới
     profile = new TutorProfile(profileFields);
     await profile.save();
-    res.json(profile);
 
+    return res.json(profile);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Lỗi Server' });
+    console.error('Lỗi createOrUpdateTutorProfile:', error);
+    res.status(500).json({ message: 'Lỗi Server khi xử lý hồ sơ gia sư' });
   }
 };
 
+
 export const getTutorById = async (req, res) => {
   try {
-    const profile = await TutorProfile.findById(req.params.id).populate('user', 'fullName email phone avatar');
+    const profile = await TutorProfile.findById(req.params.id).populate('user', '_id fullName email phone avatar');
 
     if (!profile) {
       return res.status(404).json({ message: 'Không tìm thấy hồ sơ gia sư' });

@@ -28,7 +28,7 @@ const classRequestSchema = new mongoose.Schema({
     required: true
   },
   budget: {
-    type: Number, // Ngân sách dự kiến
+    type: Number, // Học Phí
     required: true
   },
   address: {

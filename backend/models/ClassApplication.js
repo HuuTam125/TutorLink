@@ -27,7 +27,15 @@ const applicationSchema = mongoose.Schema({
   },
   adminNote: {
     type: String // Ghi chú của Admin (VD: "Đã thu phí", "Hồ sơ tốt")
-  }
+  },
+  isReported: { type: Boolean, default: false }, // Có đang bị báo cáo không
+  reportReason: { type: String }, // Lý do báo cáo
+  reportStatus: {
+    type: String,
+    enum: ['none', 'pending', 'resolved', 'refunded', 'rejected'],
+    default: 'none'
+  },
+  refundAmount: { type: Number, default: 0 } // Số tiền đã hoàn
 }, {
   timestamps: true
 });

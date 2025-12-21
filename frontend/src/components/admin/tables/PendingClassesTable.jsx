@@ -29,7 +29,7 @@ const PendingClassesTable = ({ requests, onApprove, onDelete }) => {
                 </td>
                 <td className="px-6 py-4">
                   <div className="text-green-600 font-semibold">
-                    {r.price ? new Intl.NumberFormat('vi-VN').format(r.price) + ' đ/buổi' : 'Thỏa thuận'}
+                    {r.budget ? new Intl.NumberFormat('vi-VN').format(r.budget) + ' đ/tháng' : 'Thỏa thuận'}
                   </div>
                   <div className="text-sm text-gray-500 mt-1 max-w-xs truncate" title={r.description}>
                     {r.description || 'Không có mô tả thêm'}

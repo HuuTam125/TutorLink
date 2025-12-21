@@ -258,13 +258,13 @@ const ClassDetailPage = () => {
             {/* 1. Card Tổng kết & Ứng tuyển (Sticky) */}
             <div className="bg-white rounded-2xl shadow-xl shadow-blue-900/5 border border-blue-100 p-6 lg:top-24">
               <div className="text-center mb-6">
-                <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Thu nhập ước tính / tháng</p>
+                <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Thu nhập / tháng</p>
                 <h3 className="text-4xl font-extrabold text-blue-600 tracking-tight">
-                  {(classData.budget * classData.sessionsPerWeek * 4).toLocaleString()}
+                  {(classData.budget).toLocaleString()}
                   <span className="text-lg text-gray-500 font-medium ml-1">đ</span>
                 </h3>
                 <div className="mt-2 text-xs text-gray-500 bg-gray-50 inline-block px-3 py-1 rounded-full border border-gray-100">
-                  {classData.budget.toLocaleString()}đ x {classData.sessionsPerWeek} buổi x 4 tuần
+                  {classData.sessionsPerWeek} buổi x 4 tuần
                 </div>
               </div>
 
@@ -302,11 +302,14 @@ const ClassDetailPage = () => {
 
             {/* 2. Map Mini (Optional) */}
             <div className="bg-white p-2 rounded-2xl border border-gray-100 shadow-sm">
-              <div className="bg-gray-100 rounded-xl h-48 flex flex-col items-center justify-center text-gray-400 text-sm relative overflow-hidden group cursor-pointer">
-                {/* Giả lập map image */}
-                <div className="absolute inset-0 bg-[url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg')] opacity-10 bg-cover bg-center"></div>
-                <FaMapMarkerAlt className="text-3xl text-red-400 mb-2 group-hover:scale-110 transition-transform" />
-                <span className="font-medium text-gray-500">Xem vị trí trên bản đồ</span>
+              <div className="rounded-xl h-48 overflow-hidden">
+                <iframe
+                  title="Google Map HCM"
+                  src="https://www.google.com/maps?q=Ho+Chi+Minh+City&output=embed"
+                  className="w-full h-full border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
               </div>
             </div>
 

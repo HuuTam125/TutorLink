@@ -2,6 +2,7 @@ import User from '../models/User.js';
 import ClassRequest from '../models/ClassRequest.js';
 import TutorProfile from '../models/TutorProfile.js';
 import ClassApplication from '../models/ClassApplication.js'
+import Transaction from '../models/Transaction.js';
 // @desc    Lấy danh sách tất cả người dùng
 // @route   GET /api/admin/users
 export const getAllUsers = async (req, res) => {
@@ -65,14 +66,13 @@ export const getPendingClassRequests = async (req, res) => {
   try {
     // Lấy các request có status là 'pending'
     const requests = await ClassRequest.find({ status: 'pending' })
-      .populate('user', 'fullName email') // Lấy thông tin người đăng
+      .populate('user', 'fullName phone email ') // Lấy thông tin người đăng
       .sort({ createdAt: -1 }); // Mới nhất lên đầu
     res.json(requests);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-
 // @desc    Duyệt yêu cầu lớp học
 // @route   PUT /api/admin/approve-request/:id
 export const approveClassRequest = async (req, res) => {
@@ -109,64 +109,113 @@ export const getTutorProfileById = async (req, res) => {
   }
 };
 
-// @desc    Admin lấy danh sách đơn ứng tuyển (để duyệt)
-// @route   GET /api/admin/applications
-export const getApplicationsForAdmin = async (req, res) => {
+// @desc    Lấy danh sách các đơn đang có khiếu nại (reportStatus = 'pending')
+// @route   GET /api/admin/reports
+export const getPendingReports = async (req, res) => {
   try {
-    const apps = await ClassApplication.find({})
-      .populate('tutor', 'hoTen email phoneNumber') // Lấy thông tin gia sư
-      .populate('classRequest', 'subject grade status') // Lấy thông tin lớp
-      .sort({ createdAt: -1 });
-    res.json(apps);
+    // Tìm các đơn ứng tuyển có reportStatus là 'pending'
+    const reports = await ClassApplication.find({ reportStatus: 'pending' })
+      .populate('tutor', 'fullName email phone') // Lấy thông tin Gia sư báo cáo
+      .populate('classRequest', 'subject budget')   // Lấy thông tin Lớp học để biết giá tiền
+      .sort({ updatedAt: -1 }); // Sắp xếp đơn mới báo cáo lên đầu
+
+    res.json(reports);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// @desc    Admin duyệt hoặc từ chối đơn
-// @route   PUT /api/admin/applications/:id/status
-export const updateApplicationStatus = async (req, res) => {
-  const { status, adminNote } = req.body;
-
+// @desc    Lấy danh sách các lớp đã kết nối thành công (Status = 'matched')
+// @route   GET /api/admin/matched-classes
+export const getMatchedClasses = async (req, res) => {
   try {
-    const app = await ClassApplication.findById(req.params.id);
-    if (!app) return res.status(404).json({ message: "Không tìm thấy đơn" });
+    // Tìm các lớp có status là 'matched'
+    const classes = await ClassRequest.find({ status: 'matched' })
+      .populate('user', 'fullName email') // Lấy thông tin Phụ huynh
+      .populate('assignedTutor', 'fullName phone email') // Lấy thông tin Gia sư được chọn
+      .sort({ updatedAt: -1 }); // Sắp xếp mới nhất lên đầu
 
-    // Cập nhật thông tin cơ bản
-    app.status = status;
-    if (adminNote) app.adminNote = adminNote;
-    await app.save();
-
-    // --- CASE 1: NẾU DUYỆT (APPROVED) ---
-    if (status === 'approved') {
-      const classRequest = await ClassRequest.findById(app.classRequest);
-      if (classRequest) {
-        // 1. Chốt đơn lớp học
-        classRequest.assignedTutor = app.tutor;
-        classRequest.status = 'matched'; // Đóng lớp
-        await classRequest.save();
-
-        // 2. Tự động từ chối các đối thủ khác W
-        await ClassApplication.updateMany(
-          { classRequest: classRequest._id, _id: { $ne: app._id } },
-          { status: 'rejected', adminNote: 'Lớp đã giao cho gia sư khác' }
-        );
-
-        // TODO: Gửi Notification cho Gia sư: "Chúc mừng bạn đã nhận được lớp!"
-      }
-    }
-
-    // --- CASE 2: NẾU TỪ CHỐI (REJECTED) ---
-    else if (status === 'rejected') {
-      // Lớp học (ClassRequest) KHÔNG CẦN THAY ĐỔI GÌ CẢ (Vẫn để status là approved để người khác nộp)
-
-      // Tuy nhiên, bạn có thể thêm logic phụ ở đây:
-      // TODO: Gửi Notification cho Gia sư: "Rất tiếc, hồ sơ của bạn chưa phù hợp..."
-      console.log(`Đã từ chối đơn của gia sư ${app.tutor}`);
-    }
-
-    res.json(app);
+    res.json(classes);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-}
+};
+// @desc    Lấy toàn bộ lịch sử giao dịch (Mới nhất lên đầu)
+// @route   GET /api/admin/transactions
+export const getAllTransactions = async (req, res) => {
+  try {
+    const transactions = await Transaction.find({})
+      .populate('user', 'fullName email') // Để biết ai thực hiện giao dịch
+      .sort({ createdAt: -1 }); // Sắp xếp mới nhất trước
+    res.json(transactions);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Admin TỪ CHỐI hoàn tiền (Đánh dấu đã giải quyết)
+// @route   PUT /api/admin/applications/:id/resolve-report
+export const dismissReport = async (req, res) => {
+  try {
+    const app = await ClassApplication.findById(req.params.id);
+
+    if (!app) {
+      return res.status(404).json({ message: "Không tìm thấy đơn" });
+    }
+
+    // Cập nhật trạng thái thành 'resolved' (Đã giải quyết nhưng không hoàn tiền)
+    app.reportStatus = 'resolved';
+    // Có thể thêm ghi chú nếu muốn (cần update model field adminNote)
+
+    await app.save();
+
+    res.json({ message: "Đã từ chối khiếu nại. Trạng thái đơn được cập nhật." });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Admin CHẤP NHẬN hoàn tiền
+// @route   POST /api/admin/refund
+export const processRefund = async (req, res) => {
+  const { applicationId } = req.body;
+
+  try {
+    const app = await ClassApplication.findById(applicationId).populate('classRequest');
+    if (!app) return res.status(404).json({ message: "Không tìm thấy đơn" });
+
+    // Kiểm tra logic: Chỉ hoàn tiền nếu đang có khiếu nại pending
+    if (app.reportStatus !== 'pending') {
+      return res.status(400).json({ message: "Đơn này không có khiếu nại chờ xử lý hoặc đã xử lý rồi" });
+    }
+
+    // 1. Tính tiền hoàn (15% budget)
+    const refundAmount = app.classRequest.budget * 0.15;
+
+    // 2. Cộng tiền vào ví Gia sư
+    const tutor = await User.findById(app.tutor);
+    const prevBalance = tutor.walletBalance;
+    tutor.walletBalance += refundAmount;
+    await tutor.save();
+
+    // 3. Ghi log giao dịch (Transaction Model)
+    await Transaction.create({
+      user: tutor._id,
+      type: 'refund',
+      amount: refundAmount,
+      balanceBefore: prevBalance,
+      balanceAfter: tutor.walletBalance,
+      description: `Hoàn tiền lớp: ${app.classRequest.subject} (Lý do: ${app.reportReason})`,
+      relatedApplication: app._id
+    });
+
+    // 4. Update trạng thái đơn
+    app.reportStatus = 'refunded';
+    app.refundAmount = refundAmount;
+    await app.save();
+
+    res.json({ message: "Đã hoàn tiền thành công" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

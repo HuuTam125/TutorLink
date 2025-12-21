@@ -42,7 +42,7 @@ const RequestCard = ({ request }) => {
         message: 'Tôi quan tâm đến lớp này và có kinh nghiệm phù hợp.',
       });
 
-      toast.success('🎉 Gửi yêu cầu nhận lớp thành công! Vui lòng chờ admin duyệt.');
+      toast.success('🎉 Gửi yêu cầu nhận lớp thành công! Vui lòng chờ phụ huynh duyệt.');
       setApplied(true);
     } catch (error) {
       console.error('Lỗi ứng tuyển lớp:', error);

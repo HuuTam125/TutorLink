@@ -48,10 +48,65 @@ export const applyForClass = async (req, res) => {
 export const getMyApplications = async (req, res) => {
   try {
     const apps = await ClassApplication.find({ tutor: req.user._id })
-      .populate('classRequest', 'subject grade status address budget') // Lấy thông tin lớp để hiển thị
-      .sort({ createdAt: -1 }); // Mới nhất lên đầu
+      .populate({
+        path: 'classRequest',
+        select: 'subject grade status address budget user',
+        populate: {
+          path: 'user',
+          select: 'fullName phone email'
+        }
+      })
+      .sort({ createdAt: -1 });
+    const result = apps.map(app => {
+      const user = app.classRequest?.user;
 
-    res.json(apps);
+      return {
+        ...app.toObject(),
+
+        contactInfo: user
+          ? {
+            fullName: user.fullName,
+            phone: user.phone,
+            email: user.email
+          }
+          : null,
+
+        // (tuỳ chọn) XÓA user để response gọn
+        classRequest: {
+          ...app.classRequest.toObject(),
+          user: undefined
+        }
+      };
+    });
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+// @desc    Gia sư báo cáo sự cố (để hoàn tiền)
+// @route   POST /api/applications/:id/report
+export const reportIssue = async (req, res) => {
+  const { reason } = req.body;
+  try {
+    const app = await ClassApplication.findById(req.params.id);
+
+    // Chỉ chủ đơn mới được báo cáo
+    if (app.tutor.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Không có quyền" });
+    }
+    // Phải thanh toán rồi mới được báo cáo
+    if (app.paymentStatus !== 'paid') {
+      return res.status(400).json({ message: "Bạn chưa thanh toán phí, không thể báo cáo" });
+    }
+
+    app.isReported = true;
+    app.reportReason = reason;
+    app.reportStatus = 'pending'; // Chờ Admin xử lý
+    await app.save();
+
+    res.json({ message: "Đã gửi báo cáo. Admin sẽ xem xét trong 24h." });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -5,10 +5,13 @@ import {
   approveTutor,
   deleteUser,
   getPendingClassRequests,
-  approveClassRequest,
   getTutorProfileById,
-  getApplicationsForAdmin,
-  updateApplicationStatus
+  processRefund,
+  getAllTransactions,
+  dismissReport,
+  getMatchedClasses,
+  getPendingReports,
+  approveClassRequest
 } from '../controllers/adminController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { admin } from '../middleware/adminMiddleware.js';
@@ -27,8 +30,11 @@ router.get('/tutors-profile/:id', protect, admin, getTutorProfileById);
 router.get('/requests-pending', protect, admin, getPendingClassRequests);
 router.put('/approve-request/:id', protect, admin, approveClassRequest);
 
-router.get('/applications', protect, admin, getApplicationsForAdmin); // Admin gọi để xem list
-router.put('/applications/:id/status', protect, admin, updateApplicationStatus); // Admin duyệt
+router.get('/matched-classes', protect, admin, getMatchedClasses);
+router.get('/reports', protect, admin, getPendingReports);
 
+router.get('/transactions', protect, admin, getAllTransactions); // Tab Transactions
+router.post('/refund', protect, admin, processRefund);           // Action Hoàn tiền
+router.put('/applications/:id/resolve-report', protect, admin, dismissReport); // Action Từ chối
 
 export default router;

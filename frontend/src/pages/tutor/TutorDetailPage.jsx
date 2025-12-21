@@ -1,15 +1,22 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axiosClient from "../../api/axiosClient";
 import {
   FaEnvelope, FaMapMarkerAlt, FaPhone, FaStar, FaChalkboardTeacher,
   FaCheckCircle, FaGraduationCap, FaClock, FaUserGraduate, FaCalendarAlt, FaPlayCircle
 } from "react-icons/fa";
 
+import InviteModal from "../../components/user/classes/InviteModal";
+
 const TutorDetailPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+
   const [tutor, setTutor] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // State điều khiển Modal
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   useEffect(() => {
     const fetchTutor = async () => {
@@ -25,11 +32,26 @@ const TutorDetailPage = () => {
     fetchTutor();
   }, [id]);
 
+  // Hàm xử lý khi bấm nút "Mời dạy ngay"
+  const handleOpenInvite = () => {
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+
+    // 1. Kiểm tra đăng nhập
+    if (!currentUser) {
+      if (window.confirm("Bạn cần đăng nhập để mời gia sư. Đi đến trang đăng nhập ngay?")) {
+        navigate('/login');
+      }
+      return;
+    }
+
+    // 2. Mở Modal
+    setShowInviteModal(true);
+  };
+
   if (loading) return <div className="min-h-screen flex justify-center items-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>;
   if (!tutor) return <div className="text-center text-gray-500 mt-10">Không tìm thấy gia sư này.</div>;
 
-  // --- MOCK DATA ĐỂ UI TRÔNG ĐẦY ĐẶN HƠN ---
-  // Dữ liệu này sẽ hòa trộn với dữ liệu thật từ API
+  // --- MOCK DATA ---
   const mockStats = {
     students: 24,
     hours: 150,
@@ -44,8 +66,8 @@ const TutorDetailPage = () => {
   ];
 
   const mockEducation = [
-    { title: "Cử nhân Sư phạm Toán", school: "Đại học Sư phạm TP.HCM", year: "2018 - 2022" },
-    { title: "Chứng chỉ IELTS 7.5", school: "British Council", year: "2021" }
+    { title: "Chứng chỉ IELTS 7.5", school: "British Council", year: "2021" },
+    { title: "Giải nhì Toán TP", school: "Sở GD&ĐT", year: "2019" }
   ];
 
   return (
@@ -53,7 +75,6 @@ const TutorDetailPage = () => {
 
       {/* 1. HERO SECTION & COVER IMAGE */}
       <div className="relative h-60 md:h-80 w-full">
-        {/* Ảnh bìa ngẫu nhiên theo chủ đề giáo dục */}
         <img
           src="https://images.unsplash.com/photo-1509062522246-3755977927d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
           alt="Cover"
@@ -65,7 +86,7 @@ const TutorDetailPage = () => {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-10">
         <div className="flex flex-col md:flex-row gap-8">
 
-          {/* 2. CỘT TRÁI: THÔNG TIN CHÍNH (Chiếm 2/3) */}
+          {/* 2. CỘT TRÁI: THÔNG TIN CHÍNH */}
           <div className="flex-1 space-y-8">
 
             {/* Header Card */}
@@ -119,22 +140,39 @@ const TutorDetailPage = () => {
                 <FaChalkboardTeacher className="text-blue-600" /> Giới thiệu
               </h2>
               <div className="prose max-w-none text-gray-600 leading-relaxed whitespace-pre-line">
-                {tutor.bio || "Gia sư chưa cập nhật phần giới thiệu. Tuy nhiên với kinh nghiệm và trình độ hiện tại, tôi tự tin có thể giúp học viên tiến bộ."}
-                {/* Mock text nếu bio ngắn */}
-                {!tutor.bio && <p className="mt-2">Phương pháp giảng dạy của tôi tập trung vào việc khơi gợi niềm yêu thích học tập, kết hợp giữa lý thuyết và bài tập thực hành. Tôi luôn sẵn sàng giải đáp thắc mắc của học viên 24/7.</p>}
+                {tutor.bio || "Gia sư chưa cập nhật phần giới thiệu."}
               </div>
             </div>
 
-            {/* Education Timeline (Mock Data) */}
+            {/* Education Timeline */}
             <div className="bg-white rounded-2xl shadow-sm p-8 border border-gray-100">
               <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
                 <FaGraduationCap className="text-blue-600" /> Học vấn & Chứng chỉ
               </h2>
               <div className="space-y-6">
+                {(tutor.university || tutor.major) && (
+                  <div className="flex gap-4">
+                    <div className="flex flex-col items-center">
+                      <div className="w-3 h-3 bg-blue-600 rounded-full ring-2 ring-blue-100"></div>
+                      <div className="w-0.5 h-full bg-gray-200 mt-1"></div>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-900 text-lg">
+                        {tutor.major || "Chuyên ngành"}
+                      </h4>
+                      <p className="text-gray-700 font-medium">
+                        {tutor.university || "Trường Đại học"}
+                      </p>
+                      <p className="text-blue-600 text-xs mt-1 bg-blue-50 inline-flex items-center gap-1 px-2 py-0.5 rounded border border-blue-100">
+                        <FaCheckCircle size={10} /> Đã xác thực
+                      </p>
+                    </div>
+                  </div>
+                )}
                 {mockEducation.map((edu, idx) => (
                   <div key={idx} className="flex gap-4">
                     <div className="flex flex-col items-center">
-                      <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
+                      <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
                       {idx !== mockEducation.length - 1 && <div className="w-0.5 h-full bg-gray-200 mt-1"></div>}
                     </div>
                     <div>
@@ -155,7 +193,6 @@ const TutorDetailPage = () => {
                 </h2>
                 <span className="text-blue-600 font-medium cursor-pointer hover:underline text-sm">Xem tất cả</span>
               </div>
-
               <div className="space-y-6">
                 {mockReviews.map((review) => (
                   <div key={review.id} className="border-b border-gray-100 last:border-0 pb-6 last:pb-0">
@@ -182,9 +219,8 @@ const TutorDetailPage = () => {
             </div>
           </div>
 
-          {/* 3. CỘT PHẢI: SIDEBAR STICKY (Chiếm 1/3) */}
+          {/* 3. CỘT PHẢI: SIDEBAR STICKY */}
           <div className="w-full md:w-1/3 space-y-6">
-
             {/* Booking Card */}
             <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100 sticky top-4">
               <div className="flex justify-between items-end mb-4">
@@ -215,7 +251,11 @@ const TutorDetailPage = () => {
               </div>
 
               <div className="space-y-3">
-                <button className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200">
+                {/* --- NÚT MỜI DẠY --- */}
+                <button
+                  onClick={handleOpenInvite}
+                  className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200"
+                >
                   Mời dạy ngay
                 </button>
                 <button className="w-full bg-white text-blue-600 font-bold py-3 rounded-xl border border-blue-200 hover:bg-blue-50 transition">
@@ -263,6 +303,15 @@ const TutorDetailPage = () => {
           </div>
         </div>
       </div>
+
+      {/* --- RENDER MODAL --- */}
+      {showInviteModal && (
+        <InviteModal
+          tutor={tutor}
+          onClose={() => setShowInviteModal(false)}
+        />
+      )}
+
     </div>
   );
 };
