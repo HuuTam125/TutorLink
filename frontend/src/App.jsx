@@ -8,27 +8,31 @@ import { ToastContainer } from 'react-toastify';
 import { AnimatePresence } from 'framer-motion';
 import 'react-toastify/dist/ReactToastify.css';
 
-// 1. Auth Group
+// Auth Group
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 
-// 2. Home Group
+// Home Group
 import HomePage from './pages/home/HomePage';
 
-// 3. User Group 
+// User Group 
 import UserProfilePage from './pages/user/UserProfilePage';
 
-// 4. Tutor Group
+// Tutor Group
 import TutorPage from './pages/tutor/TutorPage';
 import TutorDetailPage from './pages/tutor/TutorDetailPage';
 
-// 5. Class Group
+// Class Group
 import ClassesPage from './pages/class/ClassesPage';
 import ClassDetailPage from './pages/class/ClassDetailPage'
 import PostRequestPage from './pages/class/PostRequestPage';
 import MyRequestsPage from './pages/class/MyRequestsPage';
 
-// 6. Admin Group
+// Contact Group
+import ContactPage from './pages/contact/ContactPage';
+
+
+// Admin Group
 import AdminPage from './pages/admin/AdminPage';
 
 function App() {
@@ -86,6 +90,10 @@ function App() {
 
           <Route path="/classes/:id" element={
             <PageTransition><ClassDetailPage /></PageTransition>
+          } />
+
+          <Route path="/contact" element={
+            <PageTransition><ContactPage /></PageTransition>
           } />
 
           <Route path="/admin" element={

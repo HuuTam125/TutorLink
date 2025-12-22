@@ -4,7 +4,7 @@ import { AuthContext } from '../../../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FaUserCircle, FaCaretDown, FaSignOutAlt, FaIdCard, FaBars, FaTimes,
-  FaChalkboardTeacher, FaBookOpen, FaHome, FaGraduationCap
+  FaChalkboardTeacher, FaBookOpen, FaHome, FaGraduationCap, FaPhoneAlt
 } from 'react-icons/fa';
 
 const Header = () => {
@@ -56,6 +56,7 @@ const Header = () => {
     { name: 'Trang chủ', path: '/', icon: <FaHome /> },
     { name: 'Tìm gia sư', path: '/tutors', icon: <FaChalkboardTeacher /> },
     { name: 'Lớp mới', path: '/classes', icon: <FaBookOpen /> },
+    { name: 'Liên hệ', path: '/contact', icon: <FaPhoneAlt /> }
   ];
 
   return (

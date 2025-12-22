@@ -1,3 +1,4 @@
+import StatSection from '../../components/user/home/StatSection';
 import HomeHeroSection from '../../components/user/home/HomeHeroSection';
 import ValueProposition from '../../components/user/home/ValueProposition';
 import TutorsSection from '../../components/user/home/TutorsSection';
@@ -14,6 +15,7 @@ const HomePage = () => {
       <main className="flex-grow">
         {/* 1. Hero & Stats */}
         <HomeHeroSection />
+        <StatSection />
 
         {/* 2. Tại sao chọn chúng tôi */}
         <ValueProposition />

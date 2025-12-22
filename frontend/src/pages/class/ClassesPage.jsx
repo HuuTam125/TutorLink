@@ -62,6 +62,26 @@ const ClassesPage = () => {
     }));
   };
 
+  // Hàm xử lý khi nhấn nút "Đăng yêu cầu"
+  const handlePostRequestClick = () => {
+    const userData = localStorage.getItem('user');
+    if (!userData) {
+      toast.warning('Vui lòng đăng nhập để đăng yêu cầu!');
+      navigate('/login');
+      return;
+    }
+
+    const user = JSON.parse(userData);
+
+    if (user.role !== 'student') {
+      toast.error('Chỉ tài khoản Học viên/Phụ huynh mới có thể đăng yêu cầu tìm gia sư.');
+      return;
+    }
+
+    // Điều hướng và truyền "state" 
+    navigate('/profile', { state: { defaultTab: 'post-request' } });
+  };
+
   return (
     <div className="min-h-screen bg-[#F8F9FC] font-sans pb-20">
       <ClassHeader />
