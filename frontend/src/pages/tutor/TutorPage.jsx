@@ -3,7 +3,6 @@ import axiosClient from '../../api/axiosClient';
 import TutorHeader from '../../components/user/tutors/TutorHeader'
 import FilterSidebar from '../../components/user/tutors/FilterSidebar';
 import TutorCard from '../../components/user/tutors/TutorCard';
-import { FaCommentDots } from 'react-icons/fa';
 
 const TutorsPage = () => {
   const [tutors, setTutors] = useState([]);
@@ -176,11 +175,6 @@ const TutorsPage = () => {
           </div>
         </div>
       </div>
-
-      {/* Floating Chat */}
-      <button className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full shadow-xl shadow-blue-600/40 flex items-center gap-2 font-bold transition-transform hover:-translate-y-1 z-50">
-        <FaCommentDots size={20} /> Chat ngay
-      </button>
     </div>
   );
 };

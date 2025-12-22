@@ -1,7 +1,7 @@
 import {
   FiHome, FiUserCheck, FiUser, FiBriefcase, FiLayers,
   FiBookOpen, FiLogOut, FiCheckCircle, FiAlertTriangle, FiDollarSign, FiCpu,
-  FiMenu
+  FiMenu, FiMessageSquare
 } from 'react-icons/fi';
 import { AuthContext } from '../../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -75,6 +75,7 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
         { id: 'parents', label: 'Phụ huynh / HS', icon: <FiUser /> },
         { id: 'requests', label: 'Tất cả lớp học', icon: <FiBookOpen /> },
         { id: 'matched', label: 'Lớp đã kết nối', icon: <FiCheckCircle /> },
+        { id: 'messages', label: 'Tin nhắn Hỗ trợ', icon: <FiMessageSquare /> },
       ]
     },
     {

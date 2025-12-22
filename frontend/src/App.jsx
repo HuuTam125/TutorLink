@@ -1,12 +1,15 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
 import PageTransition from './components/user/layout/PageTransition';
 import Header from './components/user/layout/Header';
-import Footer from './components/user/layout/Footer'
-import ScrollToTop from './components/user/layout/ScrollToTop'
-import BackToTop from './components/user/layout/BackToTop'
+import Footer from './components/user/layout/Footer';
+import ScrollToTop from './components/user/layout/ScrollToTop';
+import BackToTop from './components/user/layout/BackToTop';
 import { ToastContainer } from 'react-toastify';
 import { AnimatePresence } from 'framer-motion';
 import 'react-toastify/dist/ReactToastify.css';
+
+// Chat Widget
+import ChatWidget from './components/common/ChatWidget';
 
 // Auth Group
 import LoginPage from './pages/auth/LoginPage';
@@ -24,20 +27,19 @@ import TutorDetailPage from './pages/tutor/TutorDetailPage';
 
 // Class Group
 import ClassesPage from './pages/class/ClassesPage';
-import ClassDetailPage from './pages/class/ClassDetailPage'
+import ClassDetailPage from './pages/class/ClassDetailPage';
 import PostRequestPage from './pages/class/PostRequestPage';
 import MyRequestsPage from './pages/class/MyRequestsPage';
 
 // Contact Group
 import ContactPage from './pages/contact/ContactPage';
 
-
 // Admin Group
 import AdminPage from './pages/admin/AdminPage';
 
 function App() {
-
   const location = useLocation();
+  // Kiểm tra nếu đang ở trang Admin để ẩn Header, Footer và ChatWidget
   const hide = location.pathname.startsWith('/admin');
 
   return (
@@ -46,12 +48,9 @@ function App() {
       <ScrollToTop />
       <BackToTop />
 
-      {/* 2. Thêm mode="wait" để trang cũ biến mất xong trang mới mới hiện ra (mượt hơn) */}
       <AnimatePresence mode="wait">
-        {/* 3. Phải truyền location và key vào Routes để Framer Motion nhận diện sự thay đổi */}
         <Routes location={location} key={location.pathname}>
 
-          {/* 4. Bọc PageTransition cho các element muốn có hiệu ứng */}
           <Route path="/" element={
             <PageTransition><HomePage /></PageTransition>
           } />
@@ -102,6 +101,9 @@ function App() {
 
         </Routes>
       </AnimatePresence>
+
+      {/* Chỉ hiện ChatWidget nếu không phải trang Admin */}
+      {!hide && <ChatWidget />}
 
       <ToastContainer />
       {!hide && <Footer />}

@@ -18,7 +18,7 @@ import ParentsTable from '../../components/admin/tables/ParentsTable';
 import ClassesTable from '../../components/admin/tables/ClassesTable';
 import MatchedClassesTable from '../../components/admin/tables/MatchedClassesTable';
 import RefundReportsTable from '../../components/admin/tables/RefundReportsTable';
-import TransactionsTable from '../../components/admin/tables/TransactionsTable';
+import AdminChatPanel from '../../components/admin/tables/AdminChatPanel';
 const AdminPage = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -238,8 +238,8 @@ const AdminPage = () => {
       case 'reports':
         return <RefundReportsTable reports={reports} onRefund={handleRefund} onDismiss={handleDismissReport} />;
 
-      case 'transactions':
-        return <TransactionsTable transactions={transactions} />;
+      case 'messages':
+        return <AdminChatPanel />;
       default:
         return null;
     }
