@@ -52,7 +52,12 @@ const TutorProfileTab = () => {
         grades: profile.grades.split(',').map((g) => g.trim()).filter(Boolean)
       };
       await axiosClient.post('/tutors', dataToSend);
+      setProfile(prev => ({
+        ...prev,
+        isApproved: false
+      }));
       toast.success('✅ Cập nhật hồ sơ thành công! Vui lòng chờ duyệt.');
+
     } catch (error) {
       toast.error('❌ Lỗi cập nhật hồ sơ');
       console.error(error);

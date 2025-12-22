@@ -145,7 +145,7 @@ export const getMatchedClasses = async (req, res) => {
 export const getAllTransactions = async (req, res) => {
   try {
     const transactions = await Transaction.find({})
-      .populate('user', 'fullName email') // Để biết ai thực hiện giao dịch
+      .populate('user', '_id role fullName email') // Để biết ai thực hiện giao dịch
       .sort({ createdAt: -1 }); // Sắp xếp mới nhất trước
     res.json(transactions);
   } catch (error) {

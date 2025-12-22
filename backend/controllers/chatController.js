@@ -74,7 +74,7 @@ export const getUserChatHistory = async (req, res) => {
 export const getAdminConversations = async (req, res) => {
   try {
     const convos = await Conversation.find({ members: req.user._id })
-      .populate('members', 'hoTen avatar email role')
+      .populate('members', 'fullName avatar email role')
       .sort({ updatedAt: -1 });
     res.json(convos);
   } catch (error) { res.status(500).json({ message: error.message }); }

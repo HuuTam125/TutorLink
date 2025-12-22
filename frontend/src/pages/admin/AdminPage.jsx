@@ -3,6 +3,7 @@ import axiosClient from '../../api/axiosClient';
 import { toast } from 'react-toastify';
 import { AuthContext } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion'; // IMPORT
 
 // Layout & UI Components
 import AdminSidebar from '../../components/admin/layout/AdminSidebar';
@@ -19,6 +20,15 @@ import ClassesTable from '../../components/admin/tables/ClassesTable';
 import MatchedClassesTable from '../../components/admin/tables/MatchedClassesTable';
 import RefundReportsTable from '../../components/admin/tables/RefundReportsTable';
 import AdminChatPanel from '../../components/admin/tables/AdminChatPanel';
+import TransactionsTable from '../../components/admin/tables/TransactionsTable';
+
+// --- ANIMATION VARIANTS (Hiệu ứng) ---
+const pageVariants = {
+  initial: { opacity: 0, y: 15 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+  exit: { opacity: 0, y: -15, transition: { duration: 0.2 } }
+};
+
 const AdminPage = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -33,19 +43,16 @@ const AdminPage = () => {
   const [pendingClass, setPendingClass] = useState([]);
   const [allClass, setallClass] = useState([]);
   const [selectedTutorId, setSelectedTutorId] = useState(null);
-  const [matchedClasses, setMatchedClasses] = useState([]); // Lớp đã kết nối
-  const [reports, setReports] = useState([]); // Khiếu nại
-  const [transactions, setTransactions] = useState([]); // Giao dịch
+  const [matchedClasses, setMatchedClasses] = useState([]);
+  const [reports, setReports] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+
   // Modal State
   const [modalState, setModalState] = useState({
-    isOpen: false,
-    type: null,
-    id: null,
-    title: '',
-    message: ''
+    isOpen: false, type: null, id: null, title: '', message: ''
   });
 
-  // Bảo vệ trang
+  // Protect Route
   useEffect(() => {
     if (user && user.role !== 'admin') {
       navigate('/');
@@ -56,7 +63,10 @@ const AdminPage = () => {
   // Fetch Data
   const fetchData = async () => {
     try {
-      setLoading(true);
+      // Giữ loading nhẹ để trải nghiệm không bị giật, nhưng nếu chỉ switch tab thì không nên full loading
+      // Ở đây ta giả sử load lần đầu
+      if (users.length === 0) setLoading(true);
+
       const [
         resUsers, resPendingProfile, resPendingClass, resClass,
         resMatched, resReports, resTrans
@@ -64,10 +74,10 @@ const AdminPage = () => {
         axiosClient.get('/admin/users'),
         axiosClient.get('/admin/tutors-pending'),
         axiosClient.get('/admin/requests-pending'),
-        axiosClient.get('/requests'), // Tất cả lớp
-        axiosClient.get('/admin/matched-classes'), // Lấy các lớp status 'matched'
-        axiosClient.get('/admin/reports'),         // Lấy application có reportStatus 'pending'
-        axiosClient.get('/admin/transactions'),    // Lấy lịch sử giao dịch toàn hệ thống
+        axiosClient.get('/requests'),
+        axiosClient.get('/admin/matched-classes'),
+        axiosClient.get('/admin/reports'),
+        axiosClient.get('/admin/transactions'),
       ]);
 
       setUsers(resUsers.data);
@@ -94,177 +104,153 @@ const AdminPage = () => {
 
   useEffect(() => {
     if (user?.role === 'admin') fetchData();
-  }, [user, activeTab]);
+  }, [user, activeTab]); // Reload khi đổi tab để đảm bảo data mới nhất (Tùy logic của bạn)
 
   // --- ACTIONS ---
-
   const openDeleteModal = (type, id, name = '') => {
-    let title = '';
-    let message = '';
-
+    let title = '', message = '';
     if (type === 'delete_user') {
       title = 'Xóa người dùng?';
-      message = `Bạn có chắc chắn muốn xóa người dùng "${name}"? Hành động này không thể hoàn tác.`;
+      message = `Bạn có chắc chắn muốn xóa người dùng "${name}"?`;
     } else if (type === 'delete_request') {
       title = 'Xóa bài đăng?';
       message = 'Bạn có chắc chắn muốn xóa lớp học này khỏi hệ thống?';
     }
-
     setModalState({ isOpen: true, type, id, title, message });
   };
 
-  const closeDeleteModal = () => {
-    setModalState({ ...modalState, isOpen: false });
-  };
+  const closeDeleteModal = () => setModalState({ ...modalState, isOpen: false });
 
   const handleConfirmAction = async () => {
     const { type, id } = modalState;
     closeDeleteModal();
     try {
-      if (type === 'delete_user') {
-        await axiosClient.delete(`/admin/users/${id}`);
-        toast.success('Đã xóa người dùng thành công');
-      } else if (type === 'delete_request') {
-        await axiosClient.delete(`/requests/${id}`);
-        toast.success('Đã xóa bài đăng thành công');
-      }
+      if (type === 'delete_user') await axiosClient.delete(`/admin/users/${id}`);
+      else if (type === 'delete_request') await axiosClient.delete(`/requests/${id}`);
+
+      toast.success('Thao tác thành công');
       fetchData();
     } catch (error) {
-      toast.error('Có lỗi xảy ra, vui lòng thử lại');
-      console.error(error);
+      toast.error('Có lỗi xảy ra');
     }
   };
 
-  const handleApproveTutor = async (id) => {
-    try {
-      await axiosClient.put(`/admin/approve-tutor/${id}`);
-      toast.success('Đã duyệt hồ sơ thành công!');
-      fetchData();
-    } catch (error) { toast.error('Lỗi khi duyệt'); }
-  };
+  // Handlers khác
+  const handleApproveTutor = async (id) => { /* ... */ await axiosClient.put(`/admin/approve-tutor/${id}`); fetchData(); toast.success('Đã duyệt!'); };
+  const handleApproveRequest = async (id) => { /* ... */ await axiosClient.put(`/admin/approve-request/${id}`); fetchData(); toast.success('Đã duyệt!'); };
+  const handleRefund = async (appId) => { /* ... */ await axiosClient.post('/admin/refund', { applicationId: appId }); fetchData(); toast.success('Đã hoàn tiền'); };
+  const handleDismissReport = async (appId) => { /* ... */ await axiosClient.put(`/admin/applications/${appId}/resolve-report`); fetchData(); toast.success('Đã xử lý'); };
 
-  const handleApproveRequest = async (id) => {
-    try {
-      await axiosClient.put(`/admin/approve-request/${id}`);
-      toast.success('Đã duyệt lớp học thành công!');
-      fetchData();
-    } catch (error) {
-      toast.error('Lỗi khi duyệt lớp học');
-    }
-  };
-
-  // --- XỬ LÝ KHIẾU NẠI ---
-  const handleRefund = async (appId) => {
-    if (!window.confirm("Xác nhận hoàn tiền cho Gia sư này?")) return;
-    try {
-      await axiosClient.post('/admin/refund', { applicationId: appId });
-      toast.success("Đã hoàn tiền thành công");
-      fetchData();
-    } catch (error) {
-      toast.error("Lỗi hoàn tiền: " + error.message);
-    }
-  };
-  const handleDismissReport = async (appId) => {
-    // Logic từ chối hoàn tiền (Bạn cần viết thêm API này nếu muốn)
-    if (!window.confirm("Từ chối khiếu nại này?")) return;
-    try {
-      await axiosClient.put(`/admin/applications/${appId}/resolve-report`);
-      toast.success("Đã giải quyết khiếu nại");
-      fetchData();
-    } catch (error) {
-      toast.error("Lỗi");
-    }
-  };
-  // --- RENDER CONTENT ---
+  // --- RENDER CONTENT WITH ANIMATION ---
   const renderContent = () => {
-    if (loading) return <div className="flex justify-center items-center h-64 text-gray-400">Đang tải dữ liệu...</div>;
-
-    switch (activeTab) {
-      case 'dashboard':
-        return <Dashboard stats={stats} />;
-
-      case 'pending':
-        return (
-          <PendingTutorsTable
-            tutors={pendingTutors}
-            onApprove={handleApproveTutor}
-          />
-        );
-
-      case 'pending_requests':
-        return (
-          <PendingClassesTable
-            requests={pendingClass}
-            onApprove={handleApproveRequest}
-            onDelete={(id) => openDeleteModal('delete_request', id)}
-          />
-        );
-
-      case 'tutors':
-        if (selectedTutorId) {
-          return (
-            <TutorDetailPanel
-              tutorId={selectedTutorId}
-              onBack={() => setSelectedTutorId(null)}
-            />
-          );
-        }
-        return (
-          <TutorsTable
-            users={users}
-            onSelectTutor={setSelectedTutorId}
-            onDelete={(id, name) => openDeleteModal('delete_user', id, name)}
-          />
-        );
-
-      case 'parents':
-        return (
-          <ParentsTable
-            users={users}
-            onDelete={(id, name) => openDeleteModal('delete_user', id, name)}
-          />
-        );
-
-      case 'requests':
-        return (
-          <ClassesTable
-            classes={allClass}
-            onDelete={(id) => openDeleteModal('delete_request', id)}
-          />
-        );
-      case 'matched':
-        return <MatchedClassesTable classes={matchedClasses} />;
-
-      case 'reports':
-        return <RefundReportsTable reports={reports} onRefund={handleRefund} onDismiss={handleDismissReport} />;
-
-      case 'messages':
-        return <AdminChatPanel />;
-      default:
-        return null;
+    if (loading) {
+      return (
+        <motion.div
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          className="flex flex-col justify-center items-center h-[60vh] text-gray-400 gap-3"
+        >
+          {/* Skeleton Spinner */}
+          <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+          <p className="text-sm font-medium animate-pulse">Đang đồng bộ dữ liệu...</p>
+        </motion.div>
+      );
     }
+
+    // Component mapping để code gọn hơn
+    let content = null;
+    switch (activeTab) {
+      case 'dashboard': content = <Dashboard stats={stats} />; break;
+      case 'pending': content = <PendingTutorsTable tutors={pendingTutors} onApprove={handleApproveTutor} />; break;
+      case 'pending_requests': content = <PendingClassesTable requests={pendingClass} onApprove={handleApproveRequest} onDelete={(id) => openDeleteModal('delete_request', id)} />; break;
+      case 'tutors':
+        if (selectedTutorId) return <TutorDetailPanel tutorId={selectedTutorId} onBack={() => setSelectedTutorId(null)} />;
+        content = <TutorsTable users={users} onSelectTutor={setSelectedTutorId} onDelete={(id, name) => openDeleteModal('delete_user', id, name)} />;
+        break;
+      case 'parents': content = <ParentsTable users={users} onDelete={(id, name) => openDeleteModal('delete_user', id, name)} />; break;
+      case 'requests': content = <ClassesTable classes={allClass} onDelete={(id) => openDeleteModal('delete_request', id)} />; break;
+      case 'matched': content = <MatchedClassesTable classes={matchedClasses} />; break;
+      case 'reports': content = <RefundReportsTable reports={reports} onRefund={handleRefund} onDismiss={handleDismissReport} />; break;
+      case 'transactions': content = <TransactionsTable transactions={transactions} />; break;
+      case 'messages': content = <AdminChatPanel />; break;
+      default: content = null;
+    }
+
+    return (
+      <motion.div
+        key={activeTab} // Quan trọng: Key thay đổi sẽ kích hoạt animation
+        variants={pageVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        className="w-full"
+      >
+        {content}
+      </motion.div>
+    );
+  };
+
+  // --- HEADER TITLE MAP ---
+  const getHeaderTitle = () => {
+    const titles = {
+      dashboard: 'Tổng quan hệ thống',
+      pending: 'Phê duyệt Gia sư mới',
+      pending_requests: 'Phê duyệt Lớp học',
+      tutors: 'Danh sách Gia sư',
+      parents: 'Danh sách Phụ huynh',
+      requests: 'Quản lý Lớp học',
+      matched: 'Lớp đã kết nối',
+      reports: 'Xử lý Khiếu nại',
+      transactions: 'Lịch sử Giao dịch',
+      messages: 'Tin nhắn hỗ trợ'
+    };
+    return titles[activeTab] || 'Admin Dashboard';
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans">
+    <div className="flex min-h-screen bg-slate-50 font-sans text-slate-800">
+      {/* Sidebar */}
       <AdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      <div className="flex-1 overflow-y-auto h-screen">
-        <header className="bg-white shadow-sm py-4 px-8 mb-6 sticky top-0 z-10 flex justify-between items-center">
-          <h1 className="text-xl font-bold text-gray-700 capitalize">
-            {activeTab === 'dashboard' ? 'Tổng quan' :
-              activeTab === 'pending' ? 'Duyệt Gia sư' :
-                activeTab === 'users' ? 'Quản lý Người dùng' : 'Quản lý Lớp học'}
-          </h1>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-500">Xin chào, <b>{user?.fullName}</b></span>
-            <div className="h-8 w-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">A</div>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col h-screen overflow-hidden relative">
+        {/* Background Gradient Decoration */}
+        <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-indigo-50 to-slate-50 -z-10" />
+
+        {/* --- GLASS HEADER --- */}
+        <header className="sticky top-0 z-30 px-8 py-5 flex justify-between items-center backdrop-blur-md bg-white/70 border-b border-white/50 shadow-sm transition-all">
+          <div>
+            <motion.h1
+              key={activeTab}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="text-2xl font-bold text-slate-800 tracking-tight"
+            >
+              {getHeaderTitle()}
+            </motion.h1>
+            <p className="text-sm text-slate-500 mt-1">Chào mừng trở lại, quản trị viên cấp cao.</p>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="text-right hidden md:block">
+              <p className="text-sm font-bold text-slate-700">{user?.fullName}</p>
+              <p className="text-xs text-indigo-500 font-medium bg-indigo-50 px-2 py-0.5 rounded-full inline-block">Super Admin</p>
+            </div>
+            <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 p-[2px] shadow-lg shadow-indigo-500/20 cursor-pointer hover:scale-105 transition-transform">
+              <div className="h-full w-full rounded-full bg-white flex items-center justify-center">
+                <span className="text-indigo-600 font-bold text-lg">A</span>
+              </div>
+            </div>
           </div>
         </header>
 
-        <div className="px-8 pb-10">
-          {renderContent()}
-        </div>
+        {/* --- SCROLLABLE CONTENT --- */}
+        <main className="flex-1 overflow-y-auto p-8 scrollbar-thin scrollbar-thumb-slate-300 hover:scrollbar-thumb-slate-400">
+          <div className="max-w-7xl mx-auto pb-10">
+            <AnimatePresence mode="wait">
+              {renderContent()}
+            </AnimatePresence>
+          </div>
+        </main>
       </div>
 
       <ConfirmModal
