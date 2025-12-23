@@ -3,9 +3,12 @@ import axiosClient from '../../api/axiosClient';
 import ClassHeader from '../../components/user/classes/ClassHeader';
 import RequestFilterSidebar from '../../components/user/classes/RequestFilterSidebar';
 import RequestCard from '../../components/user/classes/RequestCard';
-import { FaLayerGroup, FaPlusCircle } from 'react-icons/fa';
+import { FaLayerGroup, FaPlusCircle, FaSortAmountDown } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom'; // Thêm hook để navigate
+import { toast } from 'react-toastify'; // Giả sử bạn dùng library này
 
 const ClassesPage = () => {
+  const navigate = useNavigate(); // Hook điều hướng
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
@@ -31,7 +34,7 @@ const ClassesPage = () => {
     return cleaned;
   };
 
-  // GỌI API
+  // GỌI API (GIỮ NGUYÊN KHÔNG ĐỔI)
   const fetchRequests = async () => {
     try {
       setLoading(true);
@@ -83,9 +86,13 @@ const ClassesPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] font-sans pb-20">
+    // THAY ĐỔI 1: Nền trang màu Kem #f9f9f6
+    <div className="min-h-screen bg-[#f9f9f6] font-sans pb-20">
+
       <ClassHeader />
-      <div className="max-w-7xl mx-auto px-4 py-8">
+
+      {/* THAY ĐỔI 2: Container chính có margin âm để đè lên Header, tạo layer */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 relative z-10">
         <div className="flex flex-col lg:flex-row gap-8">
 
           {/* --- SIDEBAR --- */}
@@ -96,74 +103,86 @@ const ClassesPage = () => {
           {/* --- MAIN CONTENT --- */}
           <div className="w-full lg:w-3/4">
 
-            {/* HERO BANNER */}
-            <div className="bg-blue-50 rounded-2xl p-8 mb-8 border border-blue-100 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100 rounded-full opacity-50 translate-x-10 -translate-y-10"></div>
+            {/* HERO BANNER (Đã chuyển sang theme Navy/White) */}
+            <div className="bg-white rounded-2xl p-8 mb-8 border border-[#193366]/5 relative overflow-hidden shadow-sm">
+              {/* Decor */}
+              <div className="absolute top-0 right-0 w-40 h-40 bg-[#193366]/5 rounded-full translate-x-10 -translate-y-10"></div>
+
               <div className="relative z-10">
-                <div className="inline-block px-3 py-1 bg-blue-200 text-blue-700 rounded-full text-xs font-bold mb-3">
+                <div className="inline-block px-3 py-1 bg-[#193366]/5 text-[#193366] rounded-full text-xs font-bold mb-3 border border-[#193366]/10">
                   Danh sách lớp mới
                 </div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-3">Khám phá yêu cầu gia sư</h1>
-                <p className="text-gray-600 mb-6 max-w-2xl">
+                <h1 className="text-3xl font-extrabold text-[#193366] mb-3">Khám phá yêu cầu gia sư</h1>
+                <p className="text-gray-500 mb-6 max-w-2xl font-medium">
                   Duyệt qua các yêu cầu tìm gia sư từ phụ huynh và học sinh. Sử dụng bộ lọc để tìm cơ hội dạy phù hợp với bạn.
                 </p>
 
-                <div className="flex gap-8 border-t border-blue-200 pt-6">
+                <div className="flex gap-8 border-t border-gray-100 pt-6">
                   <div>
-                    <div className="text-2xl font-bold text-blue-600">350+</div>
-                    <div className="text-sm text-gray-500">Lớp mới tuần này</div>
+                    <div className="text-2xl font-extrabold text-[#193366]">350+</div>
+                    <div className="text-sm font-bold text-gray-400">Lớp mới tuần này</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-blue-600">120</div>
-                    <div className="text-sm text-gray-500">Đang tuyển gấp</div>
+                    <div className="text-2xl font-extrabold text-[#193366]">120</div>
+                    <div className="text-sm font-bold text-gray-400">Đang tuyển gấp</div>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* HANH SORT + ACTION */}
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-[#193366]/5 mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
               <div>
-                <h2 className="font-bold text-gray-800 text-lg flex items-center gap-2">
-                  <FaLayerGroup className="text-blue-500" /> Kết quả tìm kiếm
+                <h2 className="font-bold text-[#193366] text-lg flex items-center gap-2">
+                  <FaLayerGroup className="text-[#193366]/60" /> Kết quả tìm kiếm
                 </h2>
-                <p className="text-sm text-gray-500">
-                  Tìm thấy <span className="font-bold text-gray-900">{total}</span> lớp phù hợp
+                <p className="text-sm text-gray-400 font-medium">
+                  Tìm thấy <span className="font-bold text-[#193366]">{total}</span> lớp phù hợp
                 </p>
               </div>
 
-              <div className="flex items-center gap-3">
-                {/* Nút đăng tin nhanh */}
-                <button className="flex items-center gap-2 bg-green-50 text-green-600 px-4 py-2 rounded-lg text-sm font-bold border border-green-200 hover:bg-green-100 transition">
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                {/* Nút đăng tin nhanh: Giữ màu xanh lá #137333 cho hành động tích cực, nhưng style mềm hơn */}
+                <button
+                  onClick={handlePostRequestClick}
+                  className="flex items-center gap-2 bg-[#E6F4EA] text-[#137333] px-4 py-2.5 rounded-lg text-sm font-bold border border-[#CEEAD6] hover:bg-[#dcefe3] transition active:scale-95"
+                >
                   <FaPlusCircle /> Đăng yêu cầu
                 </button>
 
-                {/* Sort */}
-                <select
-                  value={queryParams.sort}
-                  onChange={(e) =>
-                    setQueryParams((prev) => ({ ...prev, sort: e.target.value }))
-                  }
-                  className="bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2"
-                >
-                  <option value="newest">Mới nhất</option>
-                  <option value="budget_desc">Ngân sách cao nhất</option>
-                  <option value="budget_asc">Ngân sách thấp nhất</option>
-                </select>
+                {/* Sort Dropdown Custom Style */}
+                <div className="relative">
+                  <FaSortAmountDown className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10" />
+                  <select
+                    value={queryParams.sort}
+                    onChange={(e) =>
+                      setQueryParams((prev) => ({ ...prev, sort: e.target.value }))
+                    }
+                    className="bg-gray-50 border border-gray-200 text-[#193366] text-sm font-bold rounded-lg focus:ring-2 focus:ring-[#193366]/20 focus:border-[#193366]/20 block pl-9 pr-8 py-2.5 cursor-pointer outline-none hover:bg-white transition-colors appearance-none min-w-[160px]"
+                  >
+                    <option value="newest">Mới nhất</option>
+                    <option value="budget_desc">Ngân sách cao nhất</option>
+                    <option value="budget_asc">Ngân sách thấp nhất</option>
+                  </select>
+                </div>
               </div>
             </div>
 
             {/* DANH SÁCH LỚP */}
             {loading ? (
               <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-gray-500">Đang tải danh sách lớp...</p>
+                {/* Spinner Navy */}
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#193366] mx-auto mb-4"></div>
+                <p className="text-gray-500 font-medium">Đang tải danh sách lớp...</p>
               </div>
             ) : (
               <div className="flex flex-col gap-4">
                 {requests.length === 0 ? (
-                  <div className="text-center py-10 bg-white rounded-xl border border-dashed border-gray-300">
-                    <p className="text-gray-500">Chưa có lớp học nào phù hợp.</p>
+                  <div className="text-center py-16 bg-white rounded-xl border border-dashed border-gray-300">
+                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
+                      <FaLayerGroup size={24} />
+                    </div>
+                    <p className="text-gray-500 font-medium">Chưa có lớp học nào phù hợp.</p>
                   </div>
                 ) : (
                   requests.map((req) => (
@@ -173,13 +192,13 @@ const ClassesPage = () => {
               </div>
             )}
 
-            {/* PAGINATION (Mock) */}
+            {/* PAGINATION (Mock - Style Navy) */}
             {!loading && requests.length > 0 && (
-              <div className="flex justify-center mt-10 gap-2">
-                <button className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 text-sm font-medium">Trước</button>
-                <button className="w-10 h-10 bg-blue-600 text-white rounded-lg text-sm font-bold shadow-md">1</button>
-                <button className="w-10 h-10 bg-white border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 text-sm font-medium">2</button>
-                <button className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-blue-600 hover:bg-blue-50 text-sm font-medium">Tiếp</button>
+              <div className="flex justify-center mt-12 gap-2">
+                <button className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 text-sm font-bold transition-colors">Trước</button>
+                <button className="w-10 h-10 bg-[#193366] text-white rounded-lg text-sm font-bold shadow-md shadow-[#193366]/20">1</button>
+                <button className="w-10 h-10 bg-white border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 hover:text-[#193366] text-sm font-bold transition-colors">2</button>
+                <button className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-[#193366] hover:bg-[#193366]/5 text-sm font-bold transition-colors">Tiếp</button>
               </div>
             )}
 

@@ -1,5 +1,5 @@
 import express from 'express';
-import { getWalletHistory, createPaymentLink, confirmPaymentOnMobile, checkTransactionStatus } from '../controllers/walletController.js';
+import { getWalletHistory, createPaymentLink, confirmPaymentOnMobile, checkTransactionStatus, payClassFee } from '../controllers/walletController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -15,5 +15,7 @@ router.get('/confirm-payment/:id', confirmPaymentOnMobile);
 // Route check trạng thái
 router.get('/check-status/:id', protect, checkTransactionStatus);
 
+//Route thực hiện thanh toán
+router.post('/pay-class-fee', protect, payClassFee);
 
 export default router;

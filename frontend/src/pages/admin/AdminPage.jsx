@@ -1,8 +1,8 @@
 import { useEffect, useState, useContext } from 'react';
 import axiosClient from '../../api/axiosClient';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { AuthContext } from '../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion'; // IMPORT
 
 // Layout & UI Components
@@ -33,7 +33,13 @@ const AdminPage = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'dashboard';
+  const setActiveTab = (tabId) => {
+    // Reset selectedTutorId khi đổi tab để tránh lỗi UI
+    setSelectedTutorId(null);
+    setSearchParams({ tab: tabId });
+  };
   const [loading, setLoading] = useState(true);
 
   // Data State
@@ -59,6 +65,10 @@ const AdminPage = () => {
       toast.error('Bạn không có quyền truy cập!');
     }
   }, [user, navigate]);
+
+  useEffect(() => {
+    if (user?.role === 'admin') fetchData();
+  }, [user, activeTab]);
 
   // Fetch Data
   const fetchData = async () => {

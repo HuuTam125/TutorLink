@@ -32,7 +32,7 @@ export const applyForClass = async (req, res) => {
       classRequest: classRequestId,
       tutor: req.user._id,
       message,
-      status: 'pending' // Mặc định chờ Admin duyệt
+      status: 'pending' // Mặc định chờ phụ huynh duyệt
     });
 
     res.status(201).json(application);

@@ -17,7 +17,7 @@ const LatestClasses = () => {
       per: "/buổi",
       schedule: "3 buổi/tuần",
       time: "2 giờ trước",
-      status: "urgent",
+      status: "urgent", // Gấp
       type: "Offline"
     },
     {
@@ -28,7 +28,7 @@ const LatestClasses = () => {
       per: "/buổi",
       schedule: "2 buổi/tuần (Tối)",
       time: "15 phút trước",
-      status: "new",
+      status: "new", // Mới
       type: "Online"
     },
     {
@@ -55,12 +55,12 @@ const LatestClasses = () => {
     }
   ];
 
-  // Helper colors
-  const getStatusColor = (status) => {
+  // Helper colors - Chuyển sang tông màu trầm hơn, không dùng gradient quá gắt
+  const getStatusStyle = (status) => {
     switch (status) {
-      case 'urgent': return 'from-red-500 to-rose-600';
-      case 'new': return 'from-emerald-400 to-green-600';
-      default: return 'from-blue-500 to-indigo-600';
+      case 'urgent': return 'bg-red-50 text-red-600 border border-red-100'; // Đỏ nhạt sang trọng
+      case 'new': return 'bg-[#E6F4EA] text-[#137333] border border-[#CEEAD6]'; // Xanh lá Google style
+      default: return 'bg-[#193366]/5 text-[#193366] border border-[#193366]/10'; // Navy nhạt
     }
   };
 
@@ -72,7 +72,7 @@ const LatestClasses = () => {
     }
   };
 
-  // Animation Variants (Hiệu ứng xuất hiện lần lượt)
+  // Animation Variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -90,11 +90,13 @@ const LatestClasses = () => {
     }
   };
 
-  // Màu nền section (Dùng chung cho cutout để tạo ảo giác trong suốt)
-  const SECTION_BG = "bg-[#F8F9FC]";
+  // Màu nền section trùng với theme
+  const SECTION_BG = "bg-[#f9f9f6]";
+  // Màu cutout trùng với màu section để tạo hiệu ứng trong suốt
+  const CUTOUT_COLOR = "bg-[#f9f9f6]";
 
   return (
-    <section className={`py-24 ${SECTION_BG} overflow-hidden`}>
+    <section className={`py-24 ${SECTION_BG} overflow-hidden font-sans`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* --- HEADER --- */}
@@ -105,9 +107,16 @@ const LatestClasses = () => {
             viewport={{ once: true }}
             className="max-w-xl"
           >
-            <span className="text-indigo-600 font-bold tracking-wider uppercase text-sm bg-indigo-50 px-3 py-1 rounded-full">New Jobs</span>
-            <h2 className="text-4xl font-extrabold text-gray-900 mt-3 mb-2">Lớp mới <span className="text-indigo-600">đang chờ bạn</span></h2>
-            <p className="text-gray-500 text-lg">Hàng trăm lớp học mới được cập nhật mỗi ngày. Nhận lớp phù hợp và bắt đầu dạy ngay.</p>
+            {/* Tag nhỏ: Navy Style */}
+            <span className="text-[#193366] font-bold tracking-wider uppercase text-xs bg-[#193366]/5 px-3 py-1 rounded-full border border-[#193366]/10">
+              New Jobs
+            </span>
+            <h2 className="text-4xl font-extrabold text-[#193366] mt-3 mb-2">
+              Lớp mới <span className="text-[#193366]/70 font-bold">đang chờ bạn</span>
+            </h2>
+            <p className="text-gray-500 text-lg font-medium">
+              Hàng trăm lớp học mới được cập nhật mỗi ngày. Nhận lớp phù hợp và bắt đầu dạy ngay.
+            </p>
           </motion.div>
 
           <motion.div
@@ -115,9 +124,9 @@ const LatestClasses = () => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
           >
-            <Link to="/classes" className="flex items-center gap-2 font-bold text-gray-700 hover:text-indigo-600 transition-colors group">
+            <Link to="/classes" className="flex items-center gap-2 font-bold text-[#193366] hover:text-[#193366]/80 transition-colors group">
               <span>Xem tất cả 240+ lớp</span>
-              <span className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center group-hover:bg-indigo-600 group-hover:border-indigo-600 group-hover:text-white transition-all">
+              <span className="w-8 h-8 rounded-full bg-white border border-[#193366]/20 flex items-center justify-center group-hover:bg-[#193366] group-hover:text-white transition-all shadow-sm">
                 <FaArrowRight size={12} />
               </span>
             </Link>
@@ -136,10 +145,10 @@ const LatestClasses = () => {
             <ClassTicket
               key={item.id}
               item={item}
-              getStatusColor={getStatusColor}
+              getStatusStyle={getStatusStyle}
               getStatusLabel={getStatusLabel}
               variants={itemVariants}
-              bgClass={SECTION_BG}
+              cutoutClass={CUTOUT_COLOR}
             />
           ))}
         </motion.div>
@@ -150,35 +159,37 @@ const LatestClasses = () => {
 };
 
 // --- SUB-COMPONENT: TICKET ITEM ---
-const ClassTicket = ({ item, getStatusColor, getStatusLabel, variants, bgClass }) => {
+const ClassTicket = ({ item, getStatusStyle, getStatusLabel, variants, cutoutClass }) => {
   return (
     <motion.div
       variants={variants}
-      whileHover={{ y: -5, scale: 1.01 }} // Hiệu ứng hover nổi lên
-      className="group flex flex-col sm:flex-row bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:border-indigo-100 transition-all duration-300 overflow-hidden relative cursor-pointer"
+      whileHover={{ y: -4 }}
+      // Card: Nền trắng, Border Navy nhạt, Shadow nhẹ
+      className="group flex flex-col sm:flex-row bg-white rounded-2xl shadow-sm border border-[#193366]/10 hover:shadow-[0_8px_30px_rgba(25,51,102,0.08)] hover:border-[#193366]/30 transition-all duration-300 overflow-hidden relative cursor-pointer"
     >
-      {/* 1. Status Bar (Left Stripe) */}
-      <div className={`absolute top-0 bottom-0 left-0 w-1.5 bg-gradient-to-b ${getStatusColor(item.status)}`}></div>
+      {/* 1. Status Bar (Left Stripe - Màu Navy đậm làm điểm nhấn bên trái) */}
+      <div className={`absolute top-0 bottom-0 left-0 w-1.5 bg-[#193366]`}></div>
 
       {/* 2. Main Content (Left) */}
       <div className="flex-1 p-6 pl-8 flex flex-col justify-between relative">
         {/* Top Meta */}
         <div className="flex justify-between items-start mb-3">
-          <div className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wide text-white bg-gradient-to-r ${getStatusColor(item.status)} shadow-sm ${item.status === 'urgent' ? 'animate-pulse' : ''}`}>
+          {/* Status Badge: Style theo từng loại (Gấp, Mới...) */}
+          <div className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide shadow-sm ${getStatusStyle(item.status)}`}>
             {getStatusLabel(item.status)}
           </div>
-          <span className="text-xs text-gray-400 flex items-center gap-1 bg-gray-50 px-2 py-1 rounded-md">
+          <span className="text-xs text-gray-400 flex items-center gap-1 bg-gray-50 px-2 py-1 rounded-md font-medium border border-gray-100">
             <FaClock size={10} /> {item.time}
           </span>
         </div>
 
         {/* Title */}
-        <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors mb-4 line-clamp-1" title={item.subject}>
+        <h3 className="text-lg font-bold text-[#193366] group-hover:text-[#193366]/80 transition-colors mb-4 line-clamp-1" title={item.subject}>
           {item.subject}
         </h3>
 
         {/* Details Grid */}
-        <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-sm text-gray-600">
+        <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-sm text-gray-600 font-medium">
           <div className="flex items-center gap-2 overflow-hidden">
             <FaMapMarkerAlt className="text-gray-400 min-w-[14px]" />
             <span className="truncate" title={item.location}>{item.location}</span>
@@ -196,29 +207,31 @@ const ClassTicket = ({ item, getStatusColor, getStatusLabel, variants, bgClass }
 
       {/* 3. Perforated Line (Dashed Divider) */}
       <div className="relative hidden sm:flex flex-col items-center justify-center">
+        {/* Đường đứt nét màu xám nhạt */}
         <div className="w-[1px] h-[80%] border-l-2 border-dashed border-gray-200"></div>
 
-        {/* Cutout Circles (Màu nền cutout phải trùng với bgClass của Section) */}
-        <div className={`absolute -top-3 w-6 h-6 rounded-full border-b border-gray-200 ${bgClass}`}></div>
-        <div className={`absolute -bottom-3 w-6 h-6 rounded-full border-t border-gray-200 ${bgClass}`}></div>
+        {/* Cutout Circles: Dùng class cutoutClass để trùng màu nền cha (#f9f9f6) */}
+        <div className={`absolute -top-3 w-5 h-5 rounded-full border-b border-[#193366]/10 ${cutoutClass}`}></div>
+        <div className={`absolute -bottom-3 w-5 h-5 rounded-full border-t border-[#193366]/10 ${cutoutClass}`}></div>
       </div>
 
       {/* Mobile Horizontal Divider */}
       <div className="sm:hidden w-full h-[1px] border-t-2 border-dashed border-gray-200 relative">
-        <div className={`absolute -left-3 -top-3 w-6 h-6 rounded-full border-r border-gray-200 ${bgClass}`}></div>
-        <div className={`absolute -right-3 -top-3 w-6 h-6 rounded-full border-l border-gray-200 ${bgClass}`}></div>
+        <div className={`absolute -left-3 -top-3 w-5 h-5 rounded-full border-r border-[#193366]/10 ${cutoutClass}`}></div>
+        <div className={`absolute -right-3 -top-3 w-5 h-5 rounded-full border-l border-[#193366]/10 ${cutoutClass}`}></div>
       </div>
 
       {/* 4. Action Area (Right) */}
-      <div className="sm:w-48 p-6 bg-gray-50/50 flex flex-col justify-center items-center gap-4 text-center group-hover:bg-indigo-50/30 transition-colors">
+      <div className="sm:w-48 p-6 bg-[#f9f9f6]/50 flex flex-col justify-center items-center gap-4 text-center group-hover:bg-[#193366]/5 transition-colors">
         <div>
-          <p className="text-xs text-gray-400 font-medium mb-1">Thu nhập dự kiến</p>
-          <div className="text-xl font-extrabold text-gray-900 flex items-center justify-center">
-            {item.price}<sup className="text-[10px] text-gray-500 font-normal mt-2">đ{item.per}</sup>
+          <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Thu nhập</p>
+          <div className="text-xl font-extrabold text-[#193366] flex items-center justify-center">
+            {item.price}<sup className="text-[10px] text-gray-500 font-normal mt-2 ml-0.5">đ{item.per}</sup>
           </div>
         </div>
 
-        <button className="w-full py-2.5 px-4 bg-white border border-gray-200 text-gray-700 font-bold text-sm rounded-xl shadow-sm hover:bg-indigo-600 hover:text-white hover:border-indigo-600 hover:shadow-indigo-200 transition-all duration-300 active:scale-95 flex items-center justify-center gap-2 group/btn">
+        {/* Nút Nhận lớp: Viền Navy, Hover Navy đặc */}
+        <button className="w-full py-2.5 px-4 bg-white border border-[#193366]/20 text-[#193366] font-bold text-sm rounded-xl shadow-sm hover:bg-[#193366] hover:text-white hover:border-[#193366] hover:shadow-lg transition-all duration-300 active:scale-95 flex items-center justify-center gap-2 group/btn">
           Nhận lớp <FaArrowRight size={10} className="group-hover/btn:translate-x-1 transition-transform" />
         </button>
       </div>

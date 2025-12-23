@@ -46,7 +46,7 @@ function App() {
     <div>
       {!hide && <Header />}
       <ScrollToTop />
-      <BackToTop />
+      {/* <BackToTop /> */}
 
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>

@@ -111,7 +111,7 @@ const Footer = () => {
             <ul className="space-y-4 mb-6">
               <li className="flex items-start gap-3 text-sm">
                 <FaMapMarkerAlt className="text-blue-500 mt-1 flex-shrink-0" />
-                <span>Tầng 5, Tòa nhà Tech, Quận Cầu Giấy, Hà Nội</span>
+                <span>Tầng 5, Tòa nhà Tech, Thủ Đức, Hồ Chí Minh</span>
               </li>
               <li className="flex items-center gap-3 text-sm">
                 <FaPhoneAlt className="text-blue-500 flex-shrink-0" />
@@ -119,7 +119,7 @@ const Footer = () => {
               </li>
               <li className="flex items-center gap-3 text-sm">
                 <FaEnvelope className="text-blue-500 flex-shrink-0" />
-                <span>support@giasupro.vn</span>
+                <span>support@tutorlink.vn</span>
               </li>
             </ul>
 

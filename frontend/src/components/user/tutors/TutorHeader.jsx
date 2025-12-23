@@ -34,21 +34,23 @@ const TutorHeader = () => {
   };
 
   return (
-    <div className="relative bg-white overflow-hidden">
+    // Nền kem ấm #f9f9f6
+    <div className="relative bg-[#f9f9f6] overflow-hidden font-sans">
 
-      {/* --- BACKGROUND DECORATION (Thêm hiệu ứng di chuyển nhẹ) --- */}
+      {/* --- BACKGROUND DECORATION --- */}
+      {/* Khối nền chéo bên phải: Navy nhạt */}
       <motion.div
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 1 }}
-        className="hidden lg:block absolute right-0 top-0 h-full w-1/2 bg-indigo-50/50 -skew-x-12 translate-x-20"
+        className="hidden lg:block absolute right-0 top-0 h-full w-1/2 bg-[#193366]/5 -skew-x-12 translate-x-20"
       ></motion.div>
 
-      {/* Blob trang trí (Hiệu ứng thở - Breathing) */}
+      {/* Blob trang trí: Navy nhạt hơn nữa */}
       <motion.div
         animate={{ scale: [1, 1.2, 1], rotate: [0, 10, 0] }}
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-0 left-0 w-64 h-64 bg-yellow-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 -translate-x-1/2 -translate-y-1/2"
+        className="absolute top-0 left-0 w-64 h-64 bg-[#193366]/5 rounded-full mix-blend-multiply filter blur-3xl opacity-30 -translate-x-1/2 -translate-y-1/2"
       ></motion.div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
@@ -62,20 +64,20 @@ const TutorHeader = () => {
             className="space-y-8"
           >
             <div className="space-y-4">
-              {/* Label */}
-              <motion.span variants={itemVariants} className="inline-block py-1 px-3 rounded-lg bg-indigo-100 text-indigo-700 text-xs font-bold uppercase tracking-wider">
+              {/* Label: Nền Navy nhạt, Chữ Navy */}
+              <motion.span variants={itemVariants} className="inline-block py-1 px-3 rounded-lg bg-[#193366]/10 text-[#193366] text-xs font-bold uppercase tracking-wider border border-[#193366]/10">
                 Dành cho Phụ huynh & Học sinh
               </motion.span>
 
-              {/* Headline */}
-              <motion.h1 variants={itemVariants} className="text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight">
+              {/* Headline: Navy đậm */}
+              <motion.h1 variants={itemVariants} className="text-4xl lg:text-5xl font-extrabold text-[#193366] tracking-tight leading-tight">
                 Tìm gia sư giỏi <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">
+                <span className="text-[#193366]/80 underline decoration-[#193366]/20 underline-offset-8">
                   chỉ trong 2 phút
                 </span>
               </motion.h1>
 
-              <motion.p variants={itemVariants} className="text-lg text-gray-600 max-w-lg">
+              <motion.p variants={itemVariants} className="text-lg text-gray-500 max-w-lg font-medium">
                 Điền thông tin lớp học, yêu cầu của bạn và nhận danh sách gia sư phù hợp nhất. Hoàn toàn miễn phí đăng tin.
               </motion.p>
             </div>
@@ -91,12 +93,12 @@ const TutorHeader = () => {
                 <motion.div
                   key={index}
                   variants={itemVariants}
-                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors duration-300"
+                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all duration-300"
                 >
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-                    <FaCheckCircle className="w-3.5 h-3.5 text-green-600" />
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#E6F4EA] flex items-center justify-center">
+                    <FaCheckCircle className="w-3.5 h-3.5 text-[#137333]" />
                   </div>
-                  <span className="text-gray-700 font-medium">{item}</span>
+                  <span className="text-gray-600 font-medium">{item}</span>
                 </motion.div>
               ))}
             </motion.div>
@@ -104,11 +106,11 @@ const TutorHeader = () => {
             {/* Call to Action */}
             <motion.div
               variants={itemVariants}
-              className="pt-4 flex items-center gap-2 text-indigo-600 font-semibold cursor-pointer group w-fit"
+              className="pt-4 flex items-center gap-2 text-[#193366] font-bold cursor-pointer group w-fit"
             >
-              <span className="group-hover:text-indigo-800 transition-colors">Bắt đầu điền thông tin bên dưới</span>
-              <div className="p-2 bg-indigo-50 rounded-full group-hover:bg-indigo-100 transition-colors">
-                <FaArrowDown className="w-4 h-4 animate-bounce" />
+              <span className="group-hover:text-[#193366]/80 transition-colors">Bắt đầu điền thông tin bên dưới</span>
+              <div className="p-2 bg-[#193366]/10 rounded-full group-hover:bg-[#193366]/20 transition-colors">
+                <FaArrowDown className="w-4 h-4 animate-bounce text-[#193366]" />
               </div>
             </motion.div>
           </motion.div>
@@ -120,11 +122,11 @@ const TutorHeader = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="relative"
           >
-            {/* Hình nền tròn trang trí (Pulse Effect) */}
+            {/* Hình nền tròn trang trí (Pulse Effect - Navy nhạt) */}
             <motion.div
               animate={{ scale: [1, 1.05, 1] }}
               transition={{ duration: 4, repeat: Infinity }}
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] lg:w-[450px] lg:h-[450px] bg-blue-100 rounded-full opacity-50"
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] lg:w-[450px] lg:h-[450px] bg-[#193366]/5 rounded-full"
             ></motion.div>
 
             {/* Hình ảnh chính */}
@@ -132,33 +134,33 @@ const TutorHeader = () => {
               <img
                 src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
                 alt="Student happy learning"
-                className="rounded-2xl shadow-2xl mx-auto w-full max-w-md object-cover h-[400px] lg:h-[500px] border-4 border-white"
+                className="rounded-[2.5rem] shadow-2xl shadow-[#193366]/10 mx-auto w-full max-w-md object-cover h-[400px] lg:h-[500px] border-8 border-white"
               />
 
-              {/* Floating Card 1: Kết quả (Trôi bồng bềnh) */}
+              {/* Floating Card 1: Kết quả */}
               <motion.div
                 variants={floatingVariant}
                 animate="animate"
-                className="absolute bottom-10 -left-6 lg:-left-12 bg-white/95 backdrop-blur-sm p-4 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.1)] border border-white flex items-center gap-4"
+                className="absolute bottom-10 -left-6 lg:-left-12 bg-white/95 backdrop-blur-sm p-4 rounded-2xl shadow-[0_10px_30px_rgba(25,51,102,0.15)] border border-[#193366]/5 flex items-center gap-4"
               >
-                <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600 shadow-sm">
+                <div className="w-12 h-12 bg-[#FFF9E6] rounded-full flex items-center justify-center text-[#B7791F] shadow-sm">
                   <FaGraduationCap size={24} />
                 </div>
                 <div>
-                  <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Kết quả</p>
-                  <p className="text-sm font-bold text-gray-900">Tìm được gia sư ưng ý</p>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Kết quả</p>
+                  <p className="text-sm font-bold text-[#193366]">Tìm được gia sư ưng ý</p>
                   <div className="flex mt-1 text-yellow-400 gap-0.5">
                     {[1, 2, 3, 4, 5].map(star => <FaStar key={star} size={12} />)}
                   </div>
                 </div>
               </motion.div>
 
-              {/* Floating Card 2: Support (Trôi bồng bềnh - Delay nhẹ) */}
+              {/* Floating Card 2: Support */}
               <motion.div
                 variants={floatingVariant}
                 animate="animate"
-                transition={{ delay: 1.5 }} // Delay để 2 thẻ không trôi cùng nhịp
-                className="hidden sm:flex absolute top-10 -right-6 lg:-right-8 bg-white/90 backdrop-blur-sm p-3 rounded-lg shadow-lg items-center gap-3 border border-gray-50"
+                transition={{ delay: 1.5 }}
+                className="hidden sm:flex absolute top-10 -right-6 lg:-right-8 bg-white/95 backdrop-blur-sm p-3 rounded-xl shadow-[0_10px_30px_rgba(25,51,102,0.15)] items-center gap-3 border border-[#193366]/5"
               >
                 <div className="relative">
                   <div className="w-2.5 h-2.5 bg-green-500 rounded-full"></div>
@@ -166,7 +168,7 @@ const TutorHeader = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <FaHeadset className="text-gray-400 text-sm" />
-                  <span className="text-xs font-semibold text-gray-700">Hỗ trợ 24/7</span>
+                  <span className="text-xs font-bold text-[#193366]">Hỗ trợ 24/7</span>
                 </div>
               </motion.div>
             </div>
@@ -175,8 +177,8 @@ const TutorHeader = () => {
         </div>
       </div>
 
-      {/* Đường kẻ mờ */}
-      <div className="h-px w-full bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
+      {/* Đường kẻ mờ Navy */}
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-[#193366]/10 to-transparent"></div>
     </div>
   );
 };
