@@ -310,7 +310,7 @@ const PostRequestTab = () => {
         budget: Number(formData.budget)
       });
 
-      toast.success('Đăng yêu cầu thành công!');
+      toast.success('Đã đăng yêu cầu, vui lòng chờ admin duyệt!');
       setFormData(INITIAL_DATA);
       setStep(1);
 

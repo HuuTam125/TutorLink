@@ -4,7 +4,7 @@ import axiosClient from '../../../../api/axiosClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FaCheckCircle, FaTimesCircle, FaClock, FaEye, FaExclamationTriangle,
-  FaMoneyBillWave, FaSearch
+  FaMoneyBillWave, FaSearch, FaWallet, FaArrowRight
 } from 'react-icons/fa';
 
 import PaymentModal from './PaymentModal';
@@ -20,6 +20,10 @@ const MyApplicationsTab = () => {
   const [payModal, setPayModal] = useState({ open: false, app: null });
   const [contactModal, setContactModal] = useState({ open: false, info: null });
   const [reportModal, setReportModal] = useState({ open: false, appId: null });
+
+  // STATE MỚI: Modal cảnh báo số dư
+  const [balanceModal, setBalanceModal] = useState({ open: false, message: '' });
+
   const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
@@ -58,14 +62,12 @@ const MyApplicationsTab = () => {
       const message = error.response?.data?.message || "Lỗi thanh toán";
       setPayModal({ open: false, app: null });
 
+      // --- LOGIC MỚI: Thay thế window.confirm ---
       if (message.includes("Số dư không đủ")) {
-        if (window.confirm(`${message}\n\nBạn có muốn nạp tiền ngay không?`)) {
-          // alert("Vui lòng chuyển sang tab 'Ví của tôi' để nạp tiền."); 
-          // Thay vì alert, có thể redirect user qua tab wallet
-          // navigate('/profile?tab=wallet'); 
-        }
+        // Mở Modal cảnh báo đẹp thay vì confirm của trình duyệt
+        setBalanceModal({ open: true, message: message });
       } else {
-        alert("Lỗi: " + message);
+        alert("Lỗi: " + message); // Bạn có thể thay bằng Toast notification nếu muốn
       }
     } finally {
       setActionLoading(false);
@@ -121,7 +123,7 @@ const MyApplicationsTab = () => {
   );
 
   return (
-    <div className="bg-white rounded-[2rem] p-6 md:p-10 shadow-xl shadow-slate-200/50 border border-[#193366]/5 animate-fade-in-up font-sans">
+    <div className="bg-white rounded-[2rem] p-6 md:p-10 shadow-xl shadow-slate-200/50 border border-[#193366]/5 animate-fade-in-up font-sans relative">
 
       {/* HEADER */}
       <div className="flex justify-between items-center mb-8 border-b border-gray-100 pb-6">
@@ -209,8 +211,7 @@ const MyApplicationsTab = () => {
                     {/* ACTION COLUMN */}
                     <td className="py-5 align-top">
                       <div className="flex flex-col items-start gap-2">
-
-                        {/* CASE 1: APPROVED & UNPAID -> Pay Button (Navy Gradient) */}
+                        {/* CASE 1: APPROVED & UNPAID */}
                         {app.status === 'approved' && app.paymentStatus === 'unpaid' && (
                           <motion.button
                             whileHover={{ scale: 1.05 }}
@@ -222,7 +223,7 @@ const MyApplicationsTab = () => {
                           </motion.button>
                         )}
 
-                        {/* CASE 2: PAID -> Show Contact & Report */}
+                        {/* CASE 2: PAID */}
                         {app.paymentStatus === 'paid' && (
                           <div className="flex flex-col gap-2">
                             <button
@@ -259,7 +260,7 @@ const MyApplicationsTab = () => {
         </div>
       )}
 
-      {/* --- RENDER MODALS --- */}
+      {/* --- RENDER EXISTING MODALS --- */}
       <PaymentModal
         isOpen={payModal.open}
         app={payModal.app}
@@ -280,6 +281,58 @@ const MyApplicationsTab = () => {
         onSubmit={submitReport}
         loading={actionLoading}
       />
+
+      {/* --- NEW: INSUFFICIENT BALANCE MODAL (Thay thế window.confirm) --- */}
+      <AnimatePresence>
+        {balanceModal.open && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+            {/* Overlay backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setBalanceModal({ open: false, message: '' })}
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+            ></motion.div>
+
+            {/* Modal Content */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-white rounded-3xl shadow-2xl p-6 md:p-8 max-w-sm w-full border border-gray-100 text-center"
+            >
+              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
+                <FaWallet size={32} />
+              </div>
+
+              <h3 className="text-lg font-extrabold text-[#193366] mb-2">
+                Số dư không đủ
+              </h3>
+
+              <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+                {balanceModal.message.replace("Số dư không đủ.", "") || "Bạn cần nạp thêm tiền vào ví để thực hiện thanh toán phí nhận lớp này."}
+              </p>
+
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={() => navigate('/profile?tab=wallet')}
+                  className="w-full py-3 bg-[#193366] hover:bg-[#193366]/90 text-white font-bold rounded-xl shadow-lg shadow-[#193366]/20 flex items-center justify-center gap-2 transition-all"
+                >
+                  <FaWallet /> Nạp tiền ngay <FaArrowRight size={12} />
+                </button>
+
+                <button
+                  onClick={() => setBalanceModal({ open: false, message: '' })}
+                  className="w-full py-3 bg-gray-50 hover:bg-gray-100 text-gray-600 font-bold rounded-xl transition-colors"
+                >
+                  Để sau
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

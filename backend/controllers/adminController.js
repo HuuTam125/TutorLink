@@ -3,6 +3,79 @@ import ClassRequest from '../models/ClassRequest.js';
 import TutorProfile from '../models/TutorProfile.js';
 import ClassApplication from '../models/ClassApplication.js'
 import Transaction from '../models/Transaction.js';
+
+
+// @desc    Lấy thống kê chi tiết cho Dashboard
+// @route   GET /api/admin/stats
+export const getDashboardStats = async (req, res) => {
+  try {
+    // 1. Thống kê cơ bản (Counts)
+    const totalUsers = await User.countDocuments();
+    const totalTutors = await User.countDocuments({ role: 'tutor', status: 'approved' });
+    const totalStudents = await User.countDocuments({ role: 'student' });
+
+    // 2. Thống kê Lớp học (Theo trạng thái)
+    const classStats = await ClassRequest.aggregate([
+      { $group: { _id: "$status", count: { $sum: 1 } } }
+    ]);
+    // Format lại: { pending: 5, approved: 10, matched: 3... }
+    const classStatusData = classStats.reduce((acc, curr) => {
+      acc[curr._id] = curr.count;
+      return acc;
+    }, {});
+
+    // 3. Thống kê Doanh thu (Theo 6 tháng gần nhất)
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+    const revenueStats = await Transaction.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: sixMonthsAgo },
+          type: { $in: ['payment', 'deposit'] },
+          status: 'completed'
+        }
+      },
+      {
+        $group: {
+          _id: {
+            month: { $month: "$createdAt" },
+            year: { $year: "$createdAt" },
+            type: "$type"
+          },
+          total: { $sum: "$amount" }
+        }
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1 } }
+    ]);
+
+    // 4. Top 5 Môn học phổ biến
+    const topSubjects = await ClassRequest.aggregate([
+      { $group: { _id: "$subject", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 5 }
+    ]);
+
+    res.json({
+      counts: {
+        users: totalUsers,
+        tutors: totalTutors,
+        students: totalStudents,
+        activeClasses: classStatusData.approved || 0,
+        matchedClasses: classStatusData.matched || 0,
+        pendingTutors: await User.countDocuments({ role: 'tutor', status: 'pending' }),
+        pendingClasses: classStatusData.pending || 0
+      },
+      revenueChart: revenueStats,
+      classPieChart: classStatusData,
+      subjectChart: topSubjects
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // @desc    Lấy danh sách tất cả người dùng
 // @route   GET /api/admin/users
 export const getAllUsers = async (req, res) => {
@@ -91,10 +164,34 @@ export const approveClassRequest = async (req, res) => {
   }
 };
 
+// @desc    Xóa yêu cầu lớp học (Từ chối)
+// @route   DELETE /api/admin/request/:id
+export const deleteClassRequest = async (req, res) => {
+  try {
+    const request = await ClassRequest.findById(req.params.id);
+
+    if (request) {
+      //Xóa vĩnh viễn (Hard Delete)
+      await request.deleteOne();
+      // Hoặc dùng: await ClassRequest.findByIdAndDelete(req.params.id);
+
+      // Cách 2: Nếu muốn giữ lịch sử (Soft Delete) thì dùng:
+      // request.status = 'rejected';
+      // await request.save();
+
+      res.json({ message: 'Đã xóa yêu cầu lớp học' });
+    } else {
+      res.status(404).json({ message: 'Không tìm thấy yêu cầu' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const getTutorProfileById = async (req, res) => {
   try {
     const profile = await TutorProfile.findOne({ user: req.params.id })
-      .populate('user', 'fullName email phone avatar');
+      .populate('user', '_id fullName email phone avatar');
     if (!profile) {
       return res.status(404).json({ message: 'Không tìm thấy hồ sơ gia sư' });
     }

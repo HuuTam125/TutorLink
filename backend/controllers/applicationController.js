@@ -14,7 +14,10 @@ export const applyForClass = async (req, res) => {
       return res.status(404).json({ message: 'Lớp học không tồn tại' });
     }
     if (classRequest.status !== 'approved') { // Lớp phải được duyệt mới được ứng tuyển
-      return res.status(400).json({ message: 'Lớp học này chưa sẵn sàng hoặc đã đóng' });
+      return res.status(400).json({ message: 'Lớp học này chưa được duyệt' });
+    }
+    if (classRequest.status === 'closed') { // Lớp phải được duyệt mới được ứng tuyển
+      return res.status(400).json({ message: 'Lớp học này đã đóng' });
     }
 
     // 2. Kiểm tra xem gia sư đã ứng tuyển chưa (Dù đã có index unique nhưng check code cho chắc)

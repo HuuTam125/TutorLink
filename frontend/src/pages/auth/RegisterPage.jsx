@@ -6,7 +6,8 @@ import {
   FiUser, FiMail, FiLock, FiPhone, FiArrowRight, FiArrowLeft, FiMapPin,
   FiBookOpen, FiDollarSign, FiCheckCircle
 } from 'react-icons/fi';
-import { FaChalkboardTeacher, FaUserGraduate, FaGraduationCap } from 'react-icons/fa';
+// THÊM: FaUniversity, FaBriefcase
+import { FaChalkboardTeacher, FaUserGraduate, FaGraduationCap, FaUniversity, FaBriefcase } from 'react-icons/fa';
 
 const RegisterPage = () => {
   const { register } = useContext(AuthContext);
@@ -17,6 +18,8 @@ const RegisterPage = () => {
 
   const [formData, setFormData] = useState({
     fullName: '', email: '', password: '', phone: '', role: 'student',
+    // THÊM: university, major
+    university: '', major: '',
     bio: '', subjects: '', grades: '', area: '', teachingMethod: 'both', hourlyRate: '', experience: ''
   });
 
@@ -43,8 +46,9 @@ const RegisterPage = () => {
         setStep(2);
       }
     } else {
-      if (!formData.subjects || !formData.area || !formData.hourlyRate) {
-        return toast.warn("Vui lòng nhập Môn, Khu vực và Học phí!");
+      // CẬP NHẬT: Kiểm tra thêm university và major
+      if (!formData.university || !formData.major || !formData.subjects || !formData.area || !formData.hourlyRate) {
+        return toast.warn("Vui lòng nhập đầy đủ: Trường, Ngành, Môn, Khu vực và Học phí!");
       }
       doRegister();
     }
@@ -68,12 +72,11 @@ const RegisterPage = () => {
     // Nền trang: Kem ấm #f9f9f6
     <div className="min-h-screen flex items-center justify-center bg-[#f9f9f6] p-4 font-sans">
 
-      {/* Card Container: Shadow Navy, Bo góc lớn */}
+      {/* Card Container */}
       <div className="flex w-full max-w-5xl bg-white rounded-[2.5rem] shadow-[0_20px_50px_-12px_rgba(25,51,102,0.15)] overflow-hidden min-h-[650px] transition-all duration-300 border border-[#193366]/5">
 
-        {/* --- CỘT TRÁI: BRANDING (Navy Theme) --- */}
+        {/* --- CỘT TRÁI: BRANDING (Giữ nguyên) --- */}
         <div className="hidden md:flex w-1/2 bg-[#193366] relative flex-col justify-between p-12 text-white overflow-hidden">
-
           <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
             <div className="absolute -top-10 -left-10 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
             <div className="absolute top-1/2 right-[-50px] w-80 h-80 bg-blue-500/10 rounded-full blur-3xl"></div>
@@ -123,7 +126,6 @@ const RegisterPage = () => {
               </div>
             </div>
           </div>
-
           <div className="relative z-10 mt-8 text-xs font-medium text-blue-200/50">© 2026 TutorLink Platform.</div>
         </div>
 
@@ -147,7 +149,7 @@ const RegisterPage = () => {
           <form onSubmit={handleAction} className="flex-1 flex flex-col justify-between">
             <div className="space-y-5 overflow-y-auto max-h-[450px] p-2 custom-scrollbar">
 
-              {/* --- NỘI DUNG BƯỚC 1 --- */}
+              {/* --- NỘI DUNG BƯỚC 1 (Giữ nguyên) --- */}
               {step === 1 && (
                 <div className="animate-fade-in space-y-5">
                   {/* Role Selection */}
@@ -176,7 +178,7 @@ const RegisterPage = () => {
                     </div>
                   </div>
 
-                  {/* Inputs */}
+                  {/* Inputs Step 1 */}
                   <div>
                     <label className="block text-xs font-bold text-[#193366] uppercase tracking-wider mb-2">Họ và tên</label>
                     <div className="relative group">
@@ -223,6 +225,26 @@ const RegisterPage = () => {
                 <div className="animate-fade-in space-y-4">
                   <div className="p-4 bg-[#f9f9f6] rounded-xl border border-[#193366]/10 text-sm text-gray-600 mb-4 font-medium">
                     👋 Chào <b className="text-[#193366]">{formData.fullName}</b>, hãy cho học viên biết thế mạnh của bạn nhé!
+                  </div>
+
+                  {/* CẬP NHẬT: Thêm Trường ĐH & Chuyên Ngành */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-[#193366] uppercase tracking-wider mb-2">Trường Đại học</label>
+                      <div className="relative group">
+                        <FaUniversity className="absolute left-4 top-3.5 text-gray-400 group-focus-within:text-[#193366]" />
+                        <input type="text" name="university" value={formData.university} onChange={onChange} placeholder="ĐH Bách Khoa..."
+                          className="w-full pl-12 p-3 bg-[#f9f9f6] border border-gray-200 rounded-xl focus:bg-white focus:border-[#193366] focus:ring-2 focus:ring-[#193366]/10 transition-all font-medium text-[#193366]" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-[#193366] uppercase tracking-wider mb-2">Chuyên ngành</label>
+                      <div className="relative group">
+                        <FaBriefcase className="absolute left-4 top-3.5 text-gray-400 group-focus-within:text-[#193366]" />
+                        <input type="text" name="major" value={formData.major} onChange={onChange} placeholder="CNTT, Sư phạm Anh..."
+                          className="w-full pl-12 p-3 bg-[#f9f9f6] border border-gray-200 rounded-xl focus:bg-white focus:border-[#193366] focus:ring-2 focus:ring-[#193366]/10 transition-all font-medium text-[#193366]" />
+                      </div>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -272,7 +294,7 @@ const RegisterPage = () => {
 
                   <div>
                     <label className="block text-xs font-bold text-[#193366] uppercase tracking-wider mb-2">Giới thiệu ngắn</label>
-                    <textarea name="bio" rows="2" value={formData.bio} onChange={onChange} placeholder="Kinh nghiệm, trường đại học..."
+                    <textarea name="bio" rows="2" value={formData.bio} onChange={onChange} placeholder="Kinh nghiệm, thành tích..."
                       className="w-full p-3 bg-[#f9f9f6] border border-gray-200 rounded-xl focus:bg-white focus:border-[#193366] focus:ring-2 focus:ring-[#193366]/10 transition-all font-medium text-[#193366] outline-none resize-none"></textarea>
                   </div>
                 </div>

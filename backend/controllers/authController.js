@@ -9,14 +9,14 @@ const generateToken = (id, role) => {
     expiresIn: '30d', // Token hết hạn sau 30 ngày
   });
 };
-
 // @desc    Đăng ký tài khoản mới
 // @route   POST /api/auth/register
 export const registerUser = async (req, res) => {
   // Lấy thêm các trường của Profile từ body
   const {
     fullName, email, password, phone, role, // Thông tin User
-    bio, subjects, grades, area, teachingMethod, hourlyRate, experience // Thông tin Profile (nếu là tutor)
+    // THÊM university và major vào đây
+    university, major, bio, subjects, grades, area, teachingMethod, hourlyRate, experience
   } = req.body;
 
   try {
@@ -40,6 +40,9 @@ export const registerUser = async (req, res) => {
       try {
         await TutorProfile.create({
           user: user._id, // Link với user vừa tạo
+          university: university || 'Đang cập nhật',
+          major: major || 'Đang cập nhật',
+          // -----------------------
           bio: bio || 'Chưa cập nhật',
           subjects: subjects ? subjects.split(',').map(s => s.trim()) : [],
           grades: grades ? grades.split(',').map(g => g.trim()) : [],
@@ -50,7 +53,7 @@ export const registerUser = async (req, res) => {
           isApproved: false // Mặc định chưa duyệt
         });
       } catch (profileError) {
-        // QUAN TRỌNG: Nếu tạo Profile lỗi -> Xóa luôn User vừa tạo để tránh rác
+        // QUAN TRỌNG: Nếu tạo Profile lỗi -> Xóa luôn User vừa tạo để tránh rác (Transaction thủ công)
         await User.findByIdAndDelete(user._id);
         return res.status(400).json({ message: 'Lỗi tạo hồ sơ gia sư: ' + profileError.message });
       }

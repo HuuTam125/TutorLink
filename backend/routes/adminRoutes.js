@@ -11,7 +11,9 @@ import {
   dismissReport,
   getMatchedClasses,
   getPendingReports,
-  approveClassRequest
+  approveClassRequest,
+  getDashboardStats,
+  deleteClassRequest
 } from '../controllers/adminController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { admin } from '../middleware/adminMiddleware.js';
@@ -29,6 +31,7 @@ router.get('/tutors-profile/:id', protect, admin, getTutorProfileById);
 
 router.get('/requests-pending', protect, admin, getPendingClassRequests);
 router.put('/approve-request/:id', protect, admin, approveClassRequest);
+router.delete('/request/:id', protect, admin, deleteClassRequest)
 
 router.get('/matched-classes', protect, admin, getMatchedClasses);
 router.get('/reports', protect, admin, getPendingReports);
@@ -36,5 +39,7 @@ router.get('/reports', protect, admin, getPendingReports);
 router.get('/transactions', protect, admin, getAllTransactions); // Tab Transactions
 router.post('/refund', protect, admin, processRefund);           // Action Hoàn tiền
 router.put('/applications/:id/resolve-report', protect, admin, dismissReport); // Action Từ chối
+
+router.get('/stats', protect, admin, getDashboardStats); // thống kê dashboard
 
 export default router;

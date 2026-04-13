@@ -1,6 +1,7 @@
 import Transaction from '../models/Transaction.js';
 import User from '../models/User.js';
 import ClassApplication from '../models/ClassApplication.js'
+import ClassRequest from '../models/ClassRequest.js'
 
 // @desc    Bước 1: Tạo yêu cầu nạp tiền (Pending) -> Trả về URL để sinh QR
 // @route   POST /api/wallet/create-payment-link
@@ -98,7 +99,7 @@ export const payClassFee = async (req, res) => {
       return res.status(401).json({ message: "Đơn này không phải của bạn" });
     }
     if (app.status !== 'approved') {
-      return res.status(400).json({ message: "Đơn này chưa được Admin duyệt, không thể thanh toán" });
+      return res.status(400).json({ message: "Đơn này chưa được phụ huynh duyệt, không thể thanh toán" });
     }
     if (app.paymentStatus === 'paid') {
       return res.status(400).json({ message: "Bạn đã thanh toán phí cho lớp này rồi" });
@@ -141,6 +142,8 @@ export const payClassFee = async (req, res) => {
     const fullClassInfo = await ClassRequest.findById(app.classRequest._id)
       .populate('user', 'fullName phone email'); // Lấy SĐT, Email phụ huynh
 
+    fullClassInfo.status = 'closed';
+    await fullClassInfo.save()
     res.json({
       message: "Thanh toán thành công! Bạn đã nhận lớp.",
       newBalance: user.walletBalance,

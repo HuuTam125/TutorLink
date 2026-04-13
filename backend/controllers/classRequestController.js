@@ -207,6 +207,9 @@ export const acceptTutor = async (req, res) => {
     // Cập nhật trạng thái
     app.status = 'approved';
     await app.save();
+    app.classRequest = 'matched';
+    await classRequest.save();
+
 
     res.json({ message: "Đã chọn gia sư thành công! Vui lòng chờ gia sư đóng phí." });
   } catch (error) {

@@ -29,7 +29,7 @@ const MatchedClassesTable = ({ classes }) => {
                     <div className="text-xs text-gray-500">Lớp {cls.grade}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{cls.user?.Fullname || 'N/A'}</div>
+                    <div className="text-sm text-gray-900">{cls.user?.fullName || 'N/A'}</div>
                     <div className="text-xs text-gray-500">{cls.user?.email}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

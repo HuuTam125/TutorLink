@@ -63,7 +63,7 @@ const WalletTab = () => {
     try {
       const res = await axiosClient.post('/wallet/create-payment-link', { amount });
       let mobileUrl = res.data.paymentUrl;
-      const MY_IP_ADDRESS = "192.168.1.104";
+      const MY_IP_ADDRESS = "172.30.60.198";
 
       if (mobileUrl.includes("localhost")) {
         mobileUrl = mobileUrl.replace("localhost", MY_IP_ADDRESS);

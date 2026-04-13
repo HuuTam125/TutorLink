@@ -8,7 +8,7 @@ import {
 } from 'react-icons/fa';
 
 // --- SUB-COMPONENT: THẺ ỨNG VIÊN (CANDIDATE CARD) ---
-const ApplicantCard = ({ app, onAccept }) => {
+const ApplicantCard = ({ app, onAccept, onDetail }) => {
   return (
     <div className={`p-4 rounded-xl border flex flex-col sm:flex-row gap-4 transition-all
       ${app.status === 'approved'
@@ -34,7 +34,6 @@ const ApplicantCard = ({ app, onAccept }) => {
               <FaStar className="text-yellow-400" /> 4.8/5.0 • {app.tutor?.experience || 'Gia sư kinh nghiệm'}
             </p>
           </div>
-
           {/* Status Badge */}
           <div className="text-right">
             {app.status === 'approved' ? (
@@ -60,7 +59,8 @@ const ApplicantCard = ({ app, onAccept }) => {
             >
               Chấp nhận gia sư này
             </button>
-            <button className="px-4 py-2 border border-gray-200 text-gray-600 text-xs font-bold rounded-lg hover:bg-[#f9f9f6] hover:text-[#193366]">
+            <button
+              className="px-4 py-2 border border-gray-200 text-gray-600 text-xs font-bold rounded-lg hover:bg-[#f9f9f6] hover:text-[#193366]">
               Xem hồ sơ chi tiết
             </button>
           </div>
@@ -119,7 +119,15 @@ const MyRequestsTab = () => {
       }
     }
   };
-
+  const handleDetailTutor = async (tutorId) => {
+    try {
+      const res = await axiosClient.get(`/tutors-profile/${tutorId}`);
+      navigate(`tutors/${res.data._id}`)
+    }
+    catch (error) {
+      alert("Lỗi: " + (error.response?.data?.message || error.message));
+    }
+  }
   const handleAcceptTutor = async (appId, reqId) => {
     if (!window.confirm("Bạn có chắc chắn chọn gia sư này không?")) return;
 

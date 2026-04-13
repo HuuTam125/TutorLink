@@ -3,7 +3,7 @@ import axiosClient from '../../api/axiosClient';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { AuthContext } from '../../context/AuthContext';
-import { motion, AnimatePresence } from 'framer-motion'; // IMPORT
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Layout & UI Components
 import AdminSidebar from '../../components/admin/layout/AdminSidebar';
@@ -22,11 +22,11 @@ import RefundReportsTable from '../../components/admin/tables/RefundReportsTable
 import AdminChatPanel from '../../components/admin/tables/AdminChatPanel';
 import TransactionsTable from '../../components/admin/tables/TransactionsTable';
 
-// --- ANIMATION VARIANTS (Hiệu ứng) ---
+// --- ANIMATION VARIANTS ---
 const pageVariants = {
-  initial: { opacity: 0, y: 15 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
-  exit: { opacity: 0, y: -15, transition: { duration: 0.2 } }
+  initial: { opacity: 0, y: 10 }, // Giảm y xuống 10 cho nhẹ nhàng hơn
+  animate: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
+  exit: { opacity: 0, y: -10, transition: { duration: 0.2 } }
 };
 
 const AdminPage = () => {
@@ -36,7 +36,6 @@ const AdminPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'dashboard';
   const setActiveTab = (tabId) => {
-    // Reset selectedTutorId khi đổi tab để tránh lỗi UI
     setSelectedTutorId(null);
     setSearchParams({ tab: tabId });
   };
@@ -73,14 +72,13 @@ const AdminPage = () => {
   // Fetch Data
   const fetchData = async () => {
     try {
-      // Giữ loading nhẹ để trải nghiệm không bị giật, nhưng nếu chỉ switch tab thì không nên full loading
-      // Ở đây ta giả sử load lần đầu
       if (users.length === 0) setLoading(true);
 
       const [
-        resUsers, resPendingProfile, resPendingClass, resClass,
+        resStats, resUsers, resPendingProfile, resPendingClass, resClass,
         resMatched, resReports, resTrans
       ] = await Promise.all([
+        axiosClient.get('/admin/stats'),
         axiosClient.get('/admin/users'),
         axiosClient.get('/admin/tutors-pending'),
         axiosClient.get('/admin/requests-pending'),
@@ -90,6 +88,7 @@ const AdminPage = () => {
         axiosClient.get('/admin/transactions'),
       ]);
 
+      setStats(resStats.data)
       setUsers(resUsers.data);
       setPendingTutors(resPendingProfile.data);
       setPendingClass(resPendingClass.data);
@@ -98,12 +97,6 @@ const AdminPage = () => {
       setReports(resReports.data);
       setTransactions(resTrans.data);
 
-      setStats({
-        userCount: resUsers.data.length,
-        pendingCount: resPendingProfile.data.length,
-        requestCount: resClass.data.length,
-        revenue: resTrans.data.reduce((acc, curr) => curr.type === 'payment' ? acc + curr.amount : acc, 0)
-      });
     } catch (error) {
       console.error(error);
       toast.error("Không thể tải dữ liệu admin");
@@ -111,10 +104,6 @@ const AdminPage = () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (user?.role === 'admin') fetchData();
-  }, [user, activeTab]); // Reload khi đổi tab để đảm bảo data mới nhất (Tùy logic của bạn)
 
   // --- ACTIONS ---
   const openDeleteModal = (type, id, name = '') => {
@@ -145,11 +134,21 @@ const AdminPage = () => {
     }
   };
 
-  // Handlers khác
-  const handleApproveTutor = async (id) => { /* ... */ await axiosClient.put(`/admin/approve-tutor/${id}`); fetchData(); toast.success('Đã duyệt!'); };
-  const handleApproveRequest = async (id) => { /* ... */ await axiosClient.put(`/admin/approve-request/${id}`); fetchData(); toast.success('Đã duyệt!'); };
-  const handleRefund = async (appId) => { /* ... */ await axiosClient.post('/admin/refund', { applicationId: appId }); fetchData(); toast.success('Đã hoàn tiền'); };
-  const handleDismissReport = async (appId) => { /* ... */ await axiosClient.put(`/admin/applications/${appId}/resolve-report`); fetchData(); toast.success('Đã xử lý'); };
+  const handleApproveTutor = async (id) => { await axiosClient.put(`/admin/approve-tutor/${id}`); fetchData(); toast.success('Đã duyệt!'); };
+  const handleApproveRequest = async (id) => { await axiosClient.put(`/admin/approve-request/${id}`); fetchData(); toast.success('Đã duyệt!'); };
+  const handleDeleteRequest = async (id) => {
+    if (window.confirm('Bạn có chắc chắn muốn hủy yêu cầu này không?')) {
+      try {
+        await axiosClient.delete(`/admin/request/${id}`); // Gọi API Delete
+        toast.info('Đã xóa yêu cầu!');
+        fetchData(); // Load lại bảng
+      } catch (error) {
+        toast.error('Lỗi khi xóa!');
+      }
+    }
+  };
+  const handleRefund = async (appId) => { await axiosClient.post('/admin/refund', { applicationId: appId }); fetchData(); toast.success('Đã hoàn tiền'); };
+  const handleDismissReport = async (appId) => { await axiosClient.put(`/admin/applications/${appId}/resolve-report`); fetchData(); toast.success('Đã xử lý'); };
 
   // --- RENDER CONTENT WITH ANIMATION ---
   const renderContent = () => {
@@ -157,21 +156,20 @@ const AdminPage = () => {
       return (
         <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          className="flex flex-col justify-center items-center h-[60vh] text-gray-400 gap-3"
+          className="flex flex-col justify-center items-center h-[60vh] text-slate-400 gap-3"
         >
-          {/* Skeleton Spinner */}
-          <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
-          <p className="text-sm font-medium animate-pulse">Đang đồng bộ dữ liệu...</p>
+          {/* UPDATED: Loading Spinner chuyển sang Emerald */}
+          <div className="w-10 h-10 border-4 border-emerald-100 border-t-emerald-500 rounded-full animate-spin"></div>
+          <p className="text-sm font-medium animate-pulse text-emerald-600">Đang đồng bộ dữ liệu...</p>
         </motion.div>
       );
     }
 
-    // Component mapping để code gọn hơn
     let content = null;
     switch (activeTab) {
       case 'dashboard': content = <Dashboard stats={stats} />; break;
       case 'pending': content = <PendingTutorsTable tutors={pendingTutors} onApprove={handleApproveTutor} />; break;
-      case 'pending_requests': content = <PendingClassesTable requests={pendingClass} onApprove={handleApproveRequest} onDelete={(id) => openDeleteModal('delete_request', id)} />; break;
+      case 'pending_requests': content = <PendingClassesTable requests={pendingClass} onApprove={handleApproveRequest} onDelete={handleDeleteRequest} />; break;
       case 'tutors':
         if (selectedTutorId) return <TutorDetailPanel tutorId={selectedTutorId} onBack={() => setSelectedTutorId(null)} />;
         content = <TutorsTable users={users} onSelectTutor={setSelectedTutorId} onDelete={(id, name) => openDeleteModal('delete_user', id, name)} />;
@@ -187,7 +185,7 @@ const AdminPage = () => {
 
     return (
       <motion.div
-        key={activeTab} // Quan trọng: Key thay đổi sẽ kích hoạt animation
+        key={activeTab}
         variants={pageVariants}
         initial="initial"
         animate="animate"
@@ -199,7 +197,6 @@ const AdminPage = () => {
     );
   };
 
-  // --- HEADER TITLE MAP ---
   const getHeaderTitle = () => {
     const titles = {
       dashboard: 'Tổng quan hệ thống',
@@ -217,44 +214,58 @@ const AdminPage = () => {
   };
 
   return (
+    // UPDATED: Background --bg-page (#f8fafc -> bg-slate-50)
     <div className="flex min-h-screen bg-slate-50 font-sans text-slate-800">
-      {/* Sidebar */}
+
+      {/* Sidebar - Đã được chỉnh theme Green Soft */}
       <AdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden relative">
-        {/* Background Gradient Decoration */}
-        <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-indigo-50 to-slate-50 -z-10" />
+
+        {/* UPDATED: Decoration Gradient chuyển sang Green/Emerald nhẹ */}
+        <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-emerald-50/60 to-slate-50 -z-10" />
 
         {/* --- GLASS HEADER --- */}
-        <header className="sticky top-0 z-30 px-8 py-5 flex justify-between items-center backdrop-blur-md bg-white/70 border-b border-white/50 shadow-sm transition-all">
+        <header className="sticky top-0 z-30 px-8 py-5 flex justify-between items-center backdrop-blur-md bg-white/80 border-b border-slate-100 shadow-sm transition-all">
           <div>
             <motion.h1
               key={activeTab}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="text-2xl font-bold text-slate-800 tracking-tight"
+              // UPDATED: Text color --text-title
+              className="text-2xl font-bold text-slate-900 tracking-tight"
             >
               {getHeaderTitle()}
             </motion.h1>
-            <p className="text-sm text-slate-500 mt-1">Chào mừng trở lại, quản trị viên cấp cao.</p>
+            {/* UPDATED: Text color --text-muted */}
+            <p className="text-sm text-slate-500 mt-1 font-medium">Chào mừng trở lại, quản trị viên cấp cao.</p>
           </div>
 
           <div className="flex items-center gap-4">
             <div className="text-right hidden md:block">
+              {/* UPDATED: Text body color */}
               <p className="text-sm font-bold text-slate-700">{user?.fullName}</p>
-              <p className="text-xs text-indigo-500 font-medium bg-indigo-50 px-2 py-0.5 rounded-full inline-block">Super Admin</p>
+
+              {/* UPDATED: Badge chuyển sang Green Soft */}
+              <p className="text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full inline-block border border-emerald-100">
+                Super Admin
+              </p>
             </div>
-            <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 p-[2px] shadow-lg shadow-indigo-500/20 cursor-pointer hover:scale-105 transition-transform">
+
+            {/* UPDATED: Avatar Ring chuyển sang Gradient Emerald -> Teal */}
+            <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-emerald-400 to-teal-500 p-[2px] shadow-lg shadow-emerald-500/10 cursor-pointer hover:scale-105 transition-transform">
               <div className="h-full w-full rounded-full bg-white flex items-center justify-center">
-                <span className="text-indigo-600 font-bold text-lg">A</span>
+                <span className="text-emerald-600 font-bold text-lg">
+                  {user?.fullName ? user.fullName.charAt(0).toUpperCase() : 'A'}
+                </span>
               </div>
             </div>
           </div>
         </header>
 
         {/* --- SCROLLABLE CONTENT --- */}
-        <main className="flex-1 overflow-y-auto p-8 scrollbar-thin scrollbar-thumb-slate-300 hover:scrollbar-thumb-slate-400">
+        <main className="flex-1 overflow-y-auto p-8 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent hover:scrollbar-thumb-slate-300">
           <div className="max-w-7xl mx-auto pb-10">
             <AnimatePresence mode="wait">
               {renderContent()}
