@@ -2,11 +2,16 @@ import User from "../models/User.js";
 import TutorProfile from '../models/TutorProfile.js';
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import fs from 'fs';
+import path from 'path';
 
+// ĐỌC PRIVATE KEY: Dùng path.resolve để đảm bảo lấy đúng đường dẫn file
+const privateKey = fs.readFileSync(path.resolve('keys/private.pem'), 'utf8');
 // Hàm tạo Token
-const generateToken = (id, role) => {
-  return jwt.sign({ id, role }, process.env.JWT_SECRET, {
-    expiresIn: '30d', // Token hết hạn sau 30 ngày
+const generateToken = (id, role, email) => {
+  return jwt.sign({ id, role, email }, privateKey, {
+    algorithm: 'RS256', // BẮT BUỘC: Chỉ định thuật toán bất đối xứng
+    expiresIn: '30d',
   });
 };
 // @desc    Đăng ký tài khoản mới
@@ -66,7 +71,7 @@ export const registerUser = async (req, res) => {
         fullName: user.fullName,
         email: user.email,
         role: user.role,
-        token: generateToken(user._id, user.role),
+        token: generateToken(user._id, user.role, user.email),
       });
     } else {
       res.status(400).json({ message: 'Dữ liệu không hợp lệ' });
@@ -95,7 +100,7 @@ export const loginUser = async (req, res) => {
         email: user.email,
         phone: user.phone,
         role: user.role,
-        token: generateToken(user._id, user.role),
+        token: generateToken(user._id, user.role, user.email),
       });
     } else {
       res.status(401).json({ message: 'Email hoặc mật khẩu không đúng' });
