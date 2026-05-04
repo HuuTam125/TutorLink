@@ -5,7 +5,19 @@ import path from 'path';
 
 // ĐỌC PUBLIC KEY: Frontend hoặc Middleware chỉ cần khóa này để xác thực
 const publicKey = fs.readFileSync(path.resolve('keys/public.pem'), 'utf8').replace(/\r\n/g, '\n');
-console.log("Base64 trên Server: ", Buffer.from(publicKey).toString('base64'));
+// Biến toàn cục lưu trạng thái (Mặc định là tắt phòng thủ)
+export let isDefenseMode = true;
+
+export const toggleDefenseMode = (req, res) => {
+  // Lấy trạng thái từ body gửi lên
+  isDefenseMode = req.body.isDefenseMode;
+
+  res.json({
+    message: `Đã ${isDefenseMode ? 'BẬT' : 'TẮT'} chế độ phòng thủ!`,
+    isDefenseMode
+  });
+};
+
 export const protect = async (req, res, next) => {
   let token;
 
@@ -17,17 +29,12 @@ export const protect = async (req, res, next) => {
       // Lấy token từ header: "Bearer abcxyz..." -> lấy "abcxyz..."
       token = req.headers.authorization.split(' ')[1];
 
-      // // GIẢI MÃ BẰNG PUBLIC KEY & WHITELIST THUẬT TOÁN
-      // const decoded = jwt.verify(token, publicKey, {
-      //   algorithms: ['RS256'] // Chặn hoàn toàn lỗ hổng Algorithm Confusion
-      // });
+      const verifyOptions = isDefenseMode
+        ? { algorithms: ['RS256'] } // BẬT PHÒNG THỦ: Chỉ định rõ thuật toán bất đối xứng
+        : { algorithms: ['RS256', 'HS256'] }; // TẮT PHÒNG THỦ: Cố tình để hở HS256 (Lỗ hổng)
 
-      // LỖ HỔNG NẰM Ở ĐÂY: 
-      // 1. Không khai báo 'algorithms' (trong các bản thư viện cũ)
-      // 2. Hoặc lập trình viên vô tình cho phép cả HS256 vì nghĩ dự án dùng nhiều loại token
-      const decoded = jwt.verify(token, publicKey, {
-        algorithms: ['RS256', 'HS256'] // <-- SAI LẦM Ở ĐÂY
-      });
+      // Giải mã token với options động
+      const decoded = jwt.verify(token, publicKey, verifyOptions);
 
       if (decoded.role === 'admin') {
         // Nếu là admin, tìm bằng role thay vì tìm bằng findById để tránh lỗi ObjectId

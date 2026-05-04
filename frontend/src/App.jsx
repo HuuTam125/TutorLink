@@ -10,7 +10,8 @@ import 'react-toastify/dist/ReactToastify.css';
 
 // Chat Widget
 import ChatWidget from './components/common/ChatWidget';
-
+//Demo Toggle Button
+import DemoToggleButton from './components/common/DemoToggleButton.';
 // Auth Group
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
@@ -102,6 +103,7 @@ function App() {
         </Routes>
       </AnimatePresence>
 
+      <DemoToggleButton />
       {/* Chỉ hiện ChatWidget nếu không phải trang Admin */}
       {!hide && <ChatWidget />}
 
