@@ -41,6 +41,16 @@ Dự án được xây dựng theo kiến trúc **Layered Architecture** kết h
 
 * **Kiến trúc phân tầng:** Hệ thống tách biệt rõ ràng các Route, Validation, Controller và các Service (Authentication, Tutor Search, Wallet & Payment, Class Management).
 * **Cơ sở dữ liệu:** Gồm các thực thể chính như `Users`, `TutorProfiles`, `ClassRequests`, `ClassApplications`, `Wallets`, `Transactions`, `Conversations`, và `Messages`. Nổi bật là cơ chế giao dịch (Transaction Handling) để đảm bảo tính toàn vẹn dữ liệu khi tạo hồ sơ hoặc thanh toán.
+  
+## Yêu cầu hệ thống
+*   Đã cài đặt [Docker](https://www.docker.com/) và Docker Compose.
+*   Các port `5000`, `5173`, và `27017` chưa bị chiếm dụng.
+
+## Khởi chạy hệ thống
+
+*  git clone https://github.com/HuuTam125/TutorLink_JWT
+*  cd TutorLink_JWT
+*  docker-compose up --build -d
 
  **Cấu trúc thư mục**
  ```text
