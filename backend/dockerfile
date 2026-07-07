@@ -1,0 +1,20 @@
+# Sử dụng image Node.js phiên bản gọn nhẹ
+FROM node:18-alpine
+
+# Thiết lập thư mục làm việc trong container
+WORKDIR /app
+
+# Copy các file quản lý thư viện vào trước để tận dụng cache của Docker
+COPY package*.json ./
+
+# Cài đặt thư viện
+RUN npm install
+
+# Copy toàn bộ mã nguồn backend vào container
+COPY . .
+
+# Mở cổng 5000 cho backend
+EXPOSE 5000
+
+# Lệnh khởi chạy server (đảm bảo trong package.json của bạn có script "start": "node server.js")
+CMD ["npm", "start"]

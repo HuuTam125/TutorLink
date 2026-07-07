@@ -1,0 +1,21 @@
+# --- Stage 1: Build ứng dụng React/Vite ---
+FROM node:18-alpine as build
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+# Chạy lệnh build của Vite (sẽ tạo ra thư mục dist)
+RUN npm run build
+
+# --- Stage 2: Phục vụ file tĩnh bằng Nginx ---
+FROM nginx:alpine
+# Copy các file đã build từ Stage 1 sang thư mục mặc định của Nginx
+COPY --from=build /app/dist /usr/share/nginx/html
+# Copy file cấu hình Nginx của bạn vào (để xử lý React Router không bị lỗi 404 khi F5)
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Mở cổng 80 bên trong container
+EXPOSE 80
+
+# Chạy Nginx
+CMD ["nginx", "-g", "daemon off;"]

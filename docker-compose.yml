@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: tutorhub-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tutorhub-backend
+    ports:
+      - "5000:5000"
+    environment:
+      # Trỏ tới container mongodb thay vì localhost
+      - MONGO_URI=mongodb://mongodb:27017/tutorhub
+      - PORT=5000
+      - KEYS_DIR=/app/keys
+    volumes:
+      # Ánh xạ thư mục keys từ máy thật vào container để lưu cặp key RSA
+      - ./backend/keys:/app/keys:rw
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: tutorhub-frontend
+    ports:
+      # Map cổng 5173 của máy tính (host) vào cổng 80 của Nginx (container)
+      # Điều này giúp CORS trong Backend (origin: http://localhost:5173) vẫn hoạt động đúng!
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  # Tạo volume ảo để dữ liệu database không bị mất khi tắt Docker
+  mongodb_data:
